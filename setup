@@ -1,0 +1,17 @@
+#!/bin/bash
+
+doInstall() {
+    # Install binaries
+	bin="$HOME/.local/bin" && mkdir -p "$bin" && cp fzfx "$bin/"
+}
+
+doUninstall() {
+    rm -rf "$bin/fzfx"
+}
+
+case $1 in
+	install) doInstall;;
+	uninstall) doUninstall;;
+esac
+
+
