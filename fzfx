@@ -27,20 +27,20 @@ pdfPreviewer="evince -w"
 mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s 
 
 # COLORS 
-colors="--color=\
-dark,\
-fg:-1,\
-bg:-1,\
-hl:#9173eb,\
-fg+:#ffffff,\
-bg+:#2d3444,\
-hl+:#7047eb,\
-info:#98c379,\
-prompt:#61afef,\
-pointer:#be5046,\
-marker:#e5c07b,\
-spinner:#61afef,\
-header:#61afef"
+#colors="--color=\
+#dark,\
+#fg:-1,\
+#bg:-1,\
+#hl:#9173eb,\
+#fg+:#ffffff,\
+#bg+:#2d3444,\
+#hl+:#7047eb,\
+#info:#98c379,\
+#prompt:#61afef,\
+#pointer:#be5046,\
+#marker:#e5c07b,\
+#spinner:#61afef,\
+#header:#61afef"
 
 # DEFAULTS
 export FZF_DEFAULT_OPTS="--bind '\
