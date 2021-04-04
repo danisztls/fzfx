@@ -22,9 +22,26 @@ printHelp() {
 # f4:execute-silent(nautilus -w -s {} >/dev/null)
 
 # SETTINGS
-textEditor="nvim"
+editor="nvim"
 pdfPreviewer="evince -w"
 mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s 
+
+# Set editor
+# Use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
+if ! [ "$editor" ]; then
+    editors=(vi vim nvim nano)
+    # shellcheck disable=SC2153
+    if [ "$EDITOR" ]; then
+        editor=$EDITOR
+    else
+        for prog in "${editors[@]}"; do
+            if [ "$(command -v "$prog")" ]; then
+                # remove alias and path prefix
+                editor=$(command -v "$prog" | sed 's/alias .*=//;s#.*/##')
+            fi
+        done
+    fi
+fi
 
 # COLORS 
 #colors="--color=\
@@ -43,9 +60,10 @@ mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s
 #header:#61afef"
 
 # DEFAULTS
-export FZF_DEFAULT_OPTS="--bind '\
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
+--bind '\
 f1:execute-silent(xdg-open {} 2>/dev/null),\
-f2:execute(${EDITOR:-$textEditor} {}),\
+f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept' \
     --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
