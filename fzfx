@@ -43,21 +43,22 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-# COLORS 
+# COLORS
+# Uncomment with you want the colors from supernova-theme
 #colors="--color=\
 #dark,\
-#fg:-1,\
-#bg:-1,\
-#hl:#9173eb,\
-#fg+:#ffffff,\
-#bg+:#2d3444,\
-#hl+:#7047eb,\
-#info:#98c379,\
-#prompt:#61afef,\
-#pointer:#be5046,\
-#marker:#e5c07b,\
-#spinner:#61afef,\
-#header:#61afef"
+#bg+:#373e47,\
+#bg:#2d333b,\
+#spinner:#6bac00,\
+#hl:#0087e9,\
+#fg:#adbac7,\
+#header:#009385,\
+#info:#d9b600,\
+#pointer:#b37eff,\
+#marker:#cf2424,\
+#fg+:#dddddd,\
+#prompt:#d40059,\
+#hl+:#ff5c00"
 
 # DEFAULTS
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
@@ -67,7 +68,7 @@ f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept' \
     --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
-    --preview-window=right:60%:wrap ${colors}"
+    --preview-window=right:60%:wrap ${colors:-}"
 
 batPreview="bat --style=numbers --color=always --line-range :500 {}"
 
