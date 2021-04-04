@@ -22,12 +22,16 @@ printHelp() {
 # f4:execute-silent(nautilus -w -s {} >/dev/null)
 
 # SETTINGS
-editor="nvim"
-pdfPreviewer="evince -w"
-mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s 
+# Load user configuration: $editor, $pdfPreviewer, $mediaPreviewer
+config_file="$XDG_CONFIG_HOME/fzfx/config"
+#shellcheck disable=SC1090
+[ -f "$config_file" ] && source "$config_file"
 
-# Set editor
-# Use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
+# Try to set sensible alternatives for non-specified
+[ "$pdfPreviewer" ] || pdfPreviewer="evince -w"
+[ "$mediaPreviewer" ] || mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s 
+
+# Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
 if ! [ "$editor" ]; then
     editors=(vi vim nvim nano)
     # shellcheck disable=SC2153
