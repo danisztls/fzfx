@@ -22,14 +22,15 @@ printHelp() {
 # f4:execute-silent(nautilus -w -s {} >/dev/null)
 
 # SETTINGS
-# Load user configuration: $editor, $pdfPreviewer, $mediaPreviewer
+# Load user configuration: $editor, $batPreview, $pdfPreview, $mediaPreview, $colors
 config_file="$XDG_CONFIG_HOME/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$config_file" ] && source "$config_file"
 
 # Try to set sensible alternatives for non-specified
-[ "$pdfPreviewer" ] || pdfPreviewer="evince -w"
-[ "$mediaPreviewer" ] || mediaPreviewer="mpv --no-terminal --length=5" # autoclose after 5s 
+[ "$pdfPreview" ] || pdfPreview="evince -w"
+[ "$mediaPreview" ] || mediaPreview="mpv --no-terminal --length=5" # autoclose after 5s 
+[ "$batPreview" ] || batPreview="bat --style=numbers --color=always --line-range :500 {}"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
 if ! [ "$editor" ]; then
@@ -64,7 +65,7 @@ fi
 #prompt:#d40059,\
 #hl+:#ff5c00"
 
-# DEFAULTS
+# Default Opts
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
 --bind '\
 f1:execute-silent(xdg-open {} 2>/dev/null),\
@@ -73,8 +74,6 @@ f3:execute-silent(xclip <<< {}),\
 f4:accept' \
     --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
     --preview-window=right:60%:wrap ${colors:-}"
-
-batPreview="bat --style=numbers --color=always --line-range :500 {}"
 
 ## F: find almost anything
 fzfDefault() {
@@ -93,12 +92,26 @@ fzfMd() {
 
 ## FPDF: find preview pdf and postscript files
 fzfPdf() {
-    fd -t f -i '^.*\.(pdf|ps|eps)$' | fzf --bind "enter:execute-silent($pdfPreviewer {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
+    local bind
+    if [[ $(command -v evince) ]]; then
+        bind="enter:execute-silent($pdfPreview {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
+    else
+        bind="enter:execute-silent(xdg-open {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
+    fi
+
+    fd -t f -i '^.*\.(pdf|ps|eps)$' | fzf --bind "$bind"
 }
 
 ## FVID: find video files 
 fzfMedia() {
-    fd -t f -i '^.*\.(mkv|mp4|webm|avi)$' | fzf --bind "enter:execute-silent($mediaPreviewer {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
+    local bind
+    if [[ $(command -v evince) ]]; then
+        bind="enter:execute-silent($mediaPreview {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
+    else
+        bind="enter:execute-silent(xdg-open {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
+    fi
+
+    fd -t f -i '^.*\.(mkv|mp4|webm|avi)$' | fzf --bind "$bind"
 } 
 
 # FULL: search inside files
@@ -119,16 +132,19 @@ fzfFull() {
 
 ## FCD: search dirs and cd to them
 fzfCd() {
+    [ "$(command -v treea)" ] && local preview="tree -C -c {} | head -200"
+    
     # shellcheck disable=SC2164 # it's already a noop
-    cd "$(fd -t d -i |
-    fzf --preview 'tree -C -c {} | head -200' --bind 'enter:accept' \
+    cd "$(fd -t d -i | fzf --preview "${preview:-ls --color=always {}}" --bind 'enter:accept' \
         --header 'f1 → browser, f2 → editor, enter → cd')"
 }
 
 ## FPS: search processes and manage them
 ## f1 term, f2 kill, f3 sleep, f4 wake
 fzfPs() {
-    psFind="grc --colour=on ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
+    psFind="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
+    # if grc is installed append it to command prefix
+    [ "$(command -v grc)" ] && psFind="grc --colour=on $psFind"
     # shellcheck disable=SC2031
     export FZF_DEFAULT_COMMAND="$psFind"
     fzf --ansi --header-lines=1 --reverse --cycle \
