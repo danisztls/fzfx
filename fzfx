@@ -132,7 +132,7 @@ fzfFull() {
 
 fzfCd() {
 # FCD: search dirs and cd to them
-    [ "$(command -v treea)" ] && local preview="tree -C -c {} | head -200"
+    [ "$(command -v tree)" ] && local preview="tree -C -c {} | head -200"
     
     # shellcheck disable=SC2164 # it's already a noop
     cd "$(fd -t d -i | fzf --preview "${preview:-ls --color=always {}}" --bind 'enter:accept' \
