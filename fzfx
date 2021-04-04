@@ -75,23 +75,23 @@ f4:accept' \
     --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
     --preview-window=right:60%:wrap ${colors:-}"
 
-## F: find almost anything
 fzfDefault() {
+# F: find almost anything
     fd -t f -i -E '**/.git/**' -E '**cache/**' -E '**/node_modules/**' | fzf --preview "$batPreview"
 }
 
-## FHIDDEN: find anything including hidden files
 fzfHidden() {
+# FHIDDEN: find anything including hidden files
     fd -t f -iuu -E '**/.git/**' -E '.cache/**' | fzf --preview "$batPreview"
 }
-## FMD: find markdown notes
 fzfMd() {
+# FMD: find markdown notes
     fd -t f -i -g '*.md' |
     fzf --bind "del:reload(trash {} && fd -t f -i -g '*.md')" --preview "$batPreview"
 }
 
-## FPDF: find preview pdf and postscript files
 fzfPdf() {
+# FPDF: find preview pdf and postscript files
     local bind
     if [[ $(command -v evince) ]]; then
         bind="enter:execute-silent($pdfPreview {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
@@ -102,8 +102,8 @@ fzfPdf() {
     fd -t f -i '^.*\.(pdf|ps|eps)$' | fzf --bind "$bind"
 }
 
-## FVID: find video files 
 fzfMedia() {
+# FVID: find video files 
     local bind
     if [[ $(command -v evince) ]]; then
         bind="enter:execute-silent($mediaPreview {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
@@ -114,8 +114,8 @@ fzfMedia() {
     fd -t f -i '^.*\.(mkv|mp4|webm|avi)$' | fzf --bind "$bind"
 } 
 
-# FULL: search inside files
 fzfFull() {
+# FULL: search inside files
     if [[ $(command -v rga) ]]; then
         rgFind="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite'"
         rgPreview="[[ ! -z {} ]] && rga --pretty --context 10 {q} {}"
@@ -130,8 +130,8 @@ fzfFull() {
         --bind "change:reload:$rgFind {q}"
 }
 
-## FCD: search dirs and cd to them
 fzfCd() {
+# FCD: search dirs and cd to them
     [ "$(command -v treea)" ] && local preview="tree -C -c {} | head -200"
     
     # shellcheck disable=SC2164 # it's already a noop
@@ -139,9 +139,9 @@ fzfCd() {
         --header 'f1 → browser, f2 → editor, enter → cd')"
 }
 
-## FPS: search processes and manage them
-## f1 term, f2 kill, f3 sleep, f4 wake
 fzfPs() {
+# FPS: search processes and manage them
+# f1 term, f2 kill, f3 sleep, f4 wake
     psFind="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
     # if grc is installed append it to command prefix
     [ "$(command -v grc)" ] && psFind="grc --colour=on $psFind"
@@ -157,13 +157,13 @@ f4:reload(kill -18 {1} && sleep 0.15 && $psFind)"
 }
 
 case $1 in
-    help) printHelp ;;
-    hidden) fzfHidden ;;
-    md) fzfMd ;;
-    pdf) fzfPdf ;;
-    media) fzfMedia ;;
-    full) fzfFull "$2" ;;
-    cd) fzfCd ;;
-    ps) fzfPs "$2" ;;
-    *) fzfDefault ;;
+    help) printHelp;;
+    hidden) fzfHidden;;
+    md) fzfMd;;
+    pdf) fzfPdf;;
+    media) fzfMedia;;
+    full) fzfFull "$2";;
+    cd) fzfCd;;
+    ps) fzfPs "$2";;
+    *) fzfDefault;;
 esac
