@@ -135,8 +135,8 @@ fzfCd() {
     [ "$(command -v tree)" ] && local preview="tree -C -c {} | head -200"
     
     # shellcheck disable=SC2164 # it's already a noop
-    cd "$(fd -t d -i | fzf --preview "${preview:-ls --color=always {}}" --bind 'enter:accept' \
-        --header 'f1 → browser, f2 → editor, enter → cd')"
+    fd -t d -i | fzf --preview "${preview:-ls --color=always {}}" --bind 'enter:accept' \
+        --header "f1 → browser, f2 → editor, enter → cd"
 }
 
 fzfPs() {

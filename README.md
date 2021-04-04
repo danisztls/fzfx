@@ -10,12 +10,17 @@
 - **cd**: browse directories and cd
 - **ps**: search and manage processes
 
-**cd**
-
+## Features
+### cd
 [![fcd-asciicast](https://asciinema.org/a/349907.svg)](https://asciinema.org/a/349907)
 
-**ps**
+Create an alias like
+```shell
+alias fcd='cd $(fzfx cd)'
+```
+to change directory with ENTER.
 
+### ps
 [![fps-asciicast](https://asciinema.org/a/349904.svg)](https://asciinema.org/a/349904)
 
 ## Setup
