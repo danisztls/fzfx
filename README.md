@@ -18,3 +18,10 @@
 
 [![fps-asciicast](https://asciinema.org/a/349904.svg)](https://asciinema.org/a/349904)
 
+## Setup
+Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git)
+
+Or install at Home
+```shell
+$ ./setup install
+```
