@@ -20,6 +20,8 @@ alias fcd='cd $(fzfx cd)'
 ```
 to change directory with ENTER.
 
+*Note: That's needed because a child can't act on its parent.*
+
 ### ps
 [![fps-asciicast](https://asciinema.org/a/349904.svg)](https://asciinema.org/a/349904)
 
@@ -30,3 +32,9 @@ Or install at Home
 ```shell
 $ ./setup install
 ```
+
+## Settings
+Edit `$XDG_CONFIG_HOME/fzfx/config`
+
+- Set `root="$HOME"` to search all your files from anywhere.
+- Set `editor=` to override the editor used by fzfx.

@@ -14,18 +14,17 @@ printHelp() {
     \t\e[1m'ps'\e[0m show and manage processes."
 }
 
-# SHORTCUTS
-# f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
-# f4 echoes path to stdout, del move file to trash.
-
-# open with nautilus is disabled because it's hanging the console after window is closed
-# f4:execute-silent(nautilus -w -s {} >/dev/null)
-
 # SETTINGS
 # Load user configuration: $editor, $batPreview, $pdfPreview, $mediaPreview, $colors
 config_file="$XDG_CONFIG_HOME/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$config_file" ] && source "$config_file"
+
+# Search from absolute path if root is set
+# shellcheck disable=SC2154
+if [ "$root" ]; then
+    cd "$root" ||:
+fi
 
 # Try to set sensible alternatives for non-specified
 [ "$pdfPreview" ] || pdfPreview="evince -w"
@@ -48,7 +47,7 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-# COLORS
+# Colors
 # Uncomment with you want the colors from supernova-theme
 #colors="--color=\
 #dark,\
@@ -65,7 +64,14 @@ fi
 #prompt:#d40059,\
 #hl+:#ff5c00"
 
-# Default Opts
+# Binds
+# f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
+# f4 echoes path to stdout, del move file to trash.
+
+# open with nautilus is disabled because it's hanging the console after window is closed
+# f5:execute-silent(nautilus -w -s {} >/dev/null)
+
+# Defaults
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
 --bind '\
 f1:execute-silent(xdg-open {} 2>/dev/null),\
@@ -74,6 +80,11 @@ f3:execute-silent(xclip <<< {}),\
 f4:accept' \
     --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
     --preview-window=right:60%:wrap ${colors:-}"
+
+# LIB
+# fd arguments: '-t' is type; '-E' is exclude pattern; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case'; '-g' is glob
+
+# TODO: Apply DRY principle to pattern exclusion
 
 fzfDefault() {
 # F: find almost anything
