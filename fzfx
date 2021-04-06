@@ -80,9 +80,10 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
 f1:execute-silent(xdg-open {} 2>/dev/null),\
 f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
-f4:accept' \
-    --header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
-    --preview-window=right:60%:wrap ${colors:-}"
+f4:accept',\
+del:reload(trash {} && $query) \
+--header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
+-preview-window=right:60%:wrap ${colors:-}"
 
 # LIB
 # fd arguments:
@@ -112,7 +113,6 @@ fzfHidden() {
 fzfMd() {
 # FMD: find markdown notes
     local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
-    local bind="del:reload(trash {} && $query)"
     local preview="$txtPreview"
     _fzf
 }
