@@ -2,7 +2,6 @@
 # fzf specialized functional fuzzy searches
 # dependencies: fzf, ripgrep, fd, trash-cli 
 # optionals: ripgrep-all, grc
-
 printHelp() {
     printf "USAGE:
     \t\e[1m'hidden'\e[0m hidden files excluding .git and .cache;
@@ -15,7 +14,7 @@ printHelp() {
 }
 
 # SETTINGS
-# Load user configuration: $editor, $batPreview, $pdfPreview, $mediaPreview, $colors
+# Load user configuration: $editor, $txtPreview, $pdfPreview, $mediaPreview, $colors
 configFile="$XDG_CONFIG_HOME/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
@@ -33,7 +32,7 @@ fi
 # Try to set sensible alternatives for non-specified
 [ "$pdfPreview" ] || pdfPreview="evince -w"
 [ "$mediaPreview" ] || mediaPreview="mpv --no-terminal --length=5" # autoclose after 5s 
-[ "$batPreview" ] || batPreview="bat --style=numbers --color=always --line-range :500 {}"
+[ "$txtPreview" ] || txtPreview="bat --style=numbers --color=always --line-range :500 {}"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
 if ! [ "$editor" ]; then
@@ -86,30 +85,36 @@ f4:accept' \
     --preview-window=right:60%:wrap ${colors:-}"
 
 # LIB
-# fd arguments: '-t' is type; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case';
+# fd arguments:
+# '-t' is type; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case';
 # '-g' is glob; '--no-ignore-cvs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
 
-# TODO: Unify functions
+_fzf() {
+    export FZF_DEFAULT_COMMAND="$query"
+    # shellcheck disable=SC2068
+    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${extra[@]}
+}
 
 fzfDefault() {
 # F: find almost anything
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile"
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --preview "$batPreview"
+    local preview="$txtPreview"
+    _fzf
 }
 
 fzfHidden() {
 # FHIDDEN: find anything including hidden files
     local query="fd -t f -iuu"
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --preview "$batPreview"
+    local preview="$txtPreview"
+    _fzf
 }
 
 fzfMd() {
 # FMD: find markdown notes
     local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --bind "del:reload(trash {} && $query)" --preview "$batPreview"
+    local bind="del:reload(trash {} && $query)"
+    local preview="$txtPreview"
+    _fzf
 }
 
 fzfPdf() {
@@ -121,8 +126,7 @@ fzfPdf() {
     else
         bind="enter:execute-silent(xdg-open {} &>/dev/null),del:reload(trash {} && $query)"
     fi
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --bind "$bind"
+    _fzf 
 }
 
 fzfMedia() {
@@ -134,34 +138,39 @@ fzfMedia() {
     else
         bind="enter:execute-silent(xdg-open {}),del:reload(touch {} && $query)"
     fi
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --bind "$bind"
+    _fzf
 } 
 
+# shellcheck disable=SC2120
 fzfFull() {
 # FULL: search inside files
-    local query preview
+# $1 is returned by fzf
+    local query="echo Type to search..."
+    local preview
     if [[ $(command -v rga) ]]; then
-        query="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite'"
+        query_full="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' $1"
         preview="[[ ! -z {} ]] && rga --pretty --context 10 {q} {}"
     else
-        query="rg -i --files-with-matches --no-messages"
+        query_full="rg -i --files-with-matches --no-messages $1"
         preview="rg --ignore-case --pretty --no-line-number --context 10 {q} {}"
     fi
-
-    export FZF_DEFAULT_COMMAND="$query '$1'"
-    fzf --preview "$preview" \
-        --sort --phony -q "$1" \
-        --bind "change:reload:$query {q}"
+    local bind="change:reload:$query_full {q}"
+    local extra=(--sort --phony)
+    _fzf
 }
 
 fzfCd() {
 # FCD: search dirs and cd to them
-    [ "$(command -v tree)" ] && local preview="tree -C -c {} | head -200"
-    
-    # shellcheck disable=SC2164 # it's already a noop
-    fd -t d -i | fzf --preview "${preview:-ls --color=always {}}" --bind 'enter:accept' \
-        --header "f1 → browser, f2 → editor, enter → cd"
+    local query="fd -t d -i"
+    local bind="enter:accept"
+    local preview
+    if [ "$(command -v tree)" ]; then
+        preview="tree -C -c {} | head -200"
+    else
+        preview="ls --color=always {} | head -200"
+    fi
+    local header="f1 → browser, f2 → editor, enter → cd"
+    _fzf
 }
 
 fzfPs() {
@@ -171,14 +180,14 @@ fzfPs() {
     # if grc is installed append it to command prefix
     [ "$(command -v grc)" ] && query="grc --colour=on $query"
     # shellcheck disable=SC2031
-    export FZF_DEFAULT_COMMAND="$query"
-    fzf --ansi --header-lines=1 --reverse --cycle \
-        --header "f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONTv" \
-        --bind "change:reload($query),\
+    local extra=(--ansi --header-lines=1 --reverse --cycle)
+    local bind="change:reload($query),\
 f1:reload(kill -15 {1} && sleep 0.15 && $query),\
 f2:reload(kill -9 {1} && sleep 0.15 && $query),\
 f3:reload(kill -19 {1} && sleep 0.15 && $query),\
 f4:reload(kill -18 {1} && sleep 0.15 && $query)"
+    local header="f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONTv"
+    _fzf
 }
 
 case $1 in
@@ -187,7 +196,7 @@ case $1 in
     md) fzfMd;;
     pdf) fzfPdf;;
     media) fzfMedia;;
-    full) fzfFull "$2";;
+    full) fzfFull;;
     cd) fzfCd;;
     ps) fzfPs;;
     *) fzfDefault;;
