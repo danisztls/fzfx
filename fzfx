@@ -13,7 +13,7 @@ printHelp() {
     \t\e[1m'ps'\e[0m show and manage processes."
 }
 # SETTINGS
-# Load user configuration: $editor, $txtPreview, $pdfPreview, $mediaPreview, $colors
+# Load user configuration
 configFile="$XDG_CONFIG_HOME/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
@@ -38,12 +38,6 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-# Try to set sensible alternatives for non-specified
-[ "$txtPreview" ] || txtPreview="bat --style=numbers --color=always --line-range :500 {}"
-[ "$pdfPreview" ] || pdfPreview="evince -w"
-[ "$avPreview" ]  || avPreview="mpv --no-terminal --length=5" # autoclose after 5s 
-[ "$picPreview" ] || picPreview="feh --scale-down --auto-zoom" # autoclose after 5s 
-
 # DEFAULTS
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
 # f4 echoes path to stdout, del move file to trash.
@@ -54,9 +48,14 @@ f3:execute-silent(xclip <<< {}),\
 f4:accept,\
 del:reload(trash {} && $query),\
 enter:accept"
-
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
-defaultPreview="$txtPreview"
+
+if [ "$(command -v bat)" ]; then
+    defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
+else
+    defaultPreview="cat {}"
+fi
+
 defaultOpts="--preview-window=right:50%:wrap"
 
 #defaultColors="
@@ -110,23 +109,29 @@ fzfPdf() {
 # PDF: find preview pdf and postscript files
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
     local bind
-    if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($pdfPreview {} 2>/dev/null)"
+    if [ "$pdfView" ]; then
+        return
+    elif [ "$(command -v evince)" ]; then
+        pdfView="evince -w"
     else
-        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
+        pdfView"xdg-open"
+        local bind="enter:execute-silent($pdfView {} 2>/dev/null)"
     fi
-    _fzf 
+    _fzf
 }
 
 fzfAv() {
 # AV: find video and audio files 
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
     local bind
-    if [[ $(command -v mpv) ]]; then
-        bind="enter:execute-silent($avPreview {} 2>/dev/null)"
+    if [ "$avView" ]; then
+        return
+    elif [ "$(command -v mpv)" ]; then
+        avView="mpv --no-terminal --length=5" # autclose after 5s
     else
-        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
+        avView="xdg-open"
     fi
+    local bind="enter:execute-silent($avView {} 2>/dev/null)"
     local opts=(--preview-window hidden)
     _fzf
 } 
@@ -134,12 +139,14 @@ fzfAv() {
 fzfPic() {
 # PIC: find pictures, video and audio files 
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
-    local bind
-    if [[ $(command -v mpv) ]]; then
-        bind="enter:execute-silent($picPreview {} 2>/dev/null)"
+    if [ "$picView" ]; then
+        return
+    elif [ "$(command -v feh)"  ]; then
+        picView="feh --scale-down --auto-zoom"
     else
-        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
+        picView="xdg-open"
     fi
+    local bind="enter:execute-silent($picView {} 2>/dev/null)"
     local opts=(--preview-window hidden)
     _fzf
 } 
@@ -205,7 +212,7 @@ case $1 in
     md) fzfMd;;
     pdf) fzfPdf;;
     av) fzfAv;;
-    pic) fzfPics;;
+    pic) fzfPic;;
     full) fzfFull;;
     cd) fzfCd;;
     ps) fzfPs;;

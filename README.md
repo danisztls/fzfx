@@ -12,7 +12,7 @@
 - **cd**: change directory
 - **ps**: manage processes
 
-It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It will make use of improved utils that are becoming standard at Linux desktop environments, like **rg**, **fd**, **bat**, **rga**, **grc** and many others. But it will sensibly fallback to their classic UNIX counterparts like **grep**, **less** and **ls** when them are not available.
+It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It will make use of improved utils that are becoming standard at Linux desktop environments, like **rg**, **fd**, **bat**, **rga**, **grc** and many others. But it will sensibly fallback to their classic UNIX counterparts like **grep**, **cat** and **ls** when they are not available.
 
 ### Find any file anywhere in your HOME
 ```sh
@@ -46,12 +46,8 @@ alias fcd='cd $(fzfx cd)'
 ### Manage processes 
 [![ps-asciicast](https://asciinema.org/a/349904.svg)](https://asciinema.org/a/349904)
 
-## Setup
-Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git)
-
-Or install as user
 ```sh
-$ ./setup install
+$ fzfx ps
 ```
 
 ### Find files in a niche
@@ -69,9 +65,17 @@ fzfx pic
 fzfx av
 ```
 
+## Setup
+Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git)
+
+Or install as user
+```sh
+$ ./setup install
+```
 ## Configure
 Edit `$XDG_CONFIG_HOME/fzfx/config`
 
 - Set `root="$HOME"` to search all your files from anywhere.
-- Set `editor=` to override the editor used by fzfx.
-- Set `ignoreFile=` to override the default ignore file *(.gitignore style)*.
+- Set `editor` to override the editor used by fzfx.
+- Set `ignoreFile` to override the default ignore file *(.gitignore style)*.
+- Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer. 
