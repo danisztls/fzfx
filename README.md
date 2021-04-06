@@ -62,8 +62,11 @@ $ fzfx md
 # pdf, ps and eps
 fzfx pdf
 
-# pics, videos and audio
-fzfx media
+# pictures
+fzfx pic
+
+# audio and videos
+fzfx av
 ```
 
 ## Configure

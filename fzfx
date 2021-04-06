@@ -41,7 +41,8 @@ fi
 # Try to set sensible alternatives for non-specified
 [ "$txtPreview" ] || txtPreview="bat --style=numbers --color=always --line-range :500 {}"
 [ "$pdfPreview" ] || pdfPreview="evince -w"
-[ "$mediaPreview" ] || mediaPreview="mpv --no-terminal --length=5" # autoclose after 5s 
+[ "$avPreview" ]  || avPreview="mpv --no-terminal --length=5" # autoclose after 5s 
+[ "$picPreview" ] || picPreview="feh --scale-down --auto-zoom" # autoclose after 5s 
 
 # DEFAULTS
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
@@ -74,7 +75,7 @@ defaultOpts="--preview-window=right:50%:wrap"
 #hl+:#ff5c00"
 
 # Export Defaults
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview  '$defaultPreview' $defaultOpts" #--colors $defaultColors
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts" #--colors $defaultColors
 
 # LIB
 # fd arguments:
@@ -82,49 +83,64 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defa
 # '-g' is glob; '--no-ignore-cvs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
 
 _fzf() {
+    export FZF_DEFAULT_COMMAND="$query"
     # shellcheck disable=SC2068
     fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]}
 }
 
 fzfDefault() {
-# F: find almost anything
+# DEFAULT: find almost anything
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile"
     _fzf
 }
 
 fzfHidden() {
-# FHIDDEN: find anything including hidden files
+# HIDDEN: find anything including hidden files
     local query="fd -t f -iuu"
     _fzf
 }
 
 fzfMd() {
-# FMD: find markdown notes
+# MD: find markdown notes
     local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
     _fzf
 }
 
 fzfPdf() {
-# FPDF: find preview pdf and postscript files
+# PDF: find preview pdf and postscript files
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
     local bind
     if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($pdfPreview {} &>/dev/null))"
+        bind="enter:execute-silent($pdfPreview {} 2>/dev/null)"
     else
-        bind="enter:execute-silent(xdg-open {} &>/dev/null))"
+        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
     fi
     _fzf 
 }
 
-fzfMedia() {
-# FVID: find video files 
-    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi)$'"
+fzfAv() {
+# AV: find video and audio files 
+    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
     local bind
     if [[ $(command -v mpv) ]]; then
-        bind="enter:execute-silent($mediaPreview {}))"
+        bind="enter:execute-silent($avPreview {} 2>/dev/null)"
     else
-        bind="enter:execute-silent(xdg-open {}))"
+        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
     fi
+    local opts=(--preview-window hidden)
+    _fzf
+} 
+
+fzfPic() {
+# PIC: find pictures, video and audio files 
+    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
+    local bind
+    if [[ $(command -v mpv) ]]; then
+        bind="enter:execute-silent($picPreview {} 2>/dev/null)"
+    else
+        bind="enter:execute-silent(xdg-open {} 2>/dev/null)"
+    fi
+    local opts=(--preview-window hidden)
     _fzf
 } 
 
@@ -188,7 +204,8 @@ case $1 in
     hidden) fzfHidden;;
     md) fzfMd;;
     pdf) fzfPdf;;
-    media) fzfMedia;;
+    av) fzfAv;;
+    pic) fzfPics;;
     full) fzfFull;;
     cd) fzfCd;;
     ps) fzfPs;;
