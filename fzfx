@@ -109,9 +109,9 @@ fzfPdf() {
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
     local bind
     if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($pdfPreview {} &>/dev/null),del:reload(trash {} && $query)"
+        bind="enter:execute-silent($pdfPreview {} &>/dev/null))"
     else
-        bind="enter:execute-silent(xdg-open {} &>/dev/null),del:reload(trash {} && $query)"
+        bind="enter:execute-silent(xdg-open {} &>/dev/null))"
     fi
     _fzf 
 }
@@ -120,10 +120,10 @@ fzfMedia() {
 # FVID: find video files 
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi)$'"
     local bind
-    if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($mediaPreview {}),del:reload(touch {} && $query)"
+    if [[ $(command -v mpv) ]]; then
+        bind="enter:execute-silent($mediaPreview {}))"
     else
-        bind="enter:execute-silent(xdg-open {}),del:reload(touch {} && $query)"
+        bind="enter:execute-silent(xdg-open {}))"
     fi
     _fzf
 } 
