@@ -1,0 +1,6 @@
+.git/
+cache/
+gems/
+node_modules/
+__pycache__/
+site_packages/

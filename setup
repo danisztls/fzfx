@@ -1,8 +1,16 @@
 #!/bin/bash
 
+bin="$HOME/.local/bin"
+config="$XDG_CONFIGHOME/fzfx"
+
 doInstall() {
     # Install binaries
-	bin="$HOME/.local/bin" && mkdir -p "$bin" && cp fzfx "$bin/"
+    mkdir -p "$bin"
+    cp fzfx "$bin/"
+
+    # Install config
+    mkdir -p "$config"
+    cp -n config ignore "$config/"
 }
 
 doUninstall() {

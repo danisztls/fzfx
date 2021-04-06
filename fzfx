@@ -1,7 +1,7 @@
 #!/bin/bash
 # fzf specialized functional fuzzy searches
-# dependencies: fzf, ripgrep, trash-cli 
-# optionals: ripgrep-all
+# dependencies: fzf, ripgrep, fd, trash-cli 
+# optionals: ripgrep-all, grc
 
 printHelp() {
     printf "USAGE:
@@ -16,9 +16,13 @@ printHelp() {
 
 # SETTINGS
 # Load user configuration: $editor, $batPreview, $pdfPreview, $mediaPreview, $colors
-config_file="$XDG_CONFIG_HOME/fzfx/config"
+configFile="$XDG_CONFIG_HOME/fzfx/config"
 #shellcheck disable=SC1090
-[ -f "$config_file" ] && source "$config_file"
+[ -f "$configFile" ] && source "$configFile"
+
+# Load ignore file
+ignoreFile="$XDG_CONFIG_HOME/fzfx/ignore"
+[ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
 
 # Search from absolute path if root is set
 # shellcheck disable=SC2154
@@ -82,63 +86,73 @@ f4:accept' \
     --preview-window=right:60%:wrap ${colors:-}"
 
 # LIB
-# fd arguments: '-t' is type; '-E' is exclude pattern; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case'; '-g' is glob
+# fd arguments: '-t' is type; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case';
+# '-g' is glob; '--no-ignore-cvs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
 
-# TODO: Apply DRY principle to pattern exclusion
+# TODO: Unify functions
 
 fzfDefault() {
 # F: find almost anything
-    fd -t f -i -E '**/.git/**' -E '**cache/**' -E '**/node_modules/**' | fzf --preview "$batPreview"
+    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile"
+    export FZF_DEFAULT_COMMAND="$query"
+    fzf --preview "$batPreview"
 }
 
 fzfHidden() {
 # FHIDDEN: find anything including hidden files
-    fd -t f -iuu -E '**/.git/**' -E '.cache/**' | fzf --preview "$batPreview"
+    local query="fd -t f -iuu"
+    export FZF_DEFAULT_COMMAND="$query"
+    fzf --preview "$batPreview"
 }
+
 fzfMd() {
 # FMD: find markdown notes
-    fd -t f -i -g '*.md' |
-    fzf --bind "del:reload(trash {} && fd -t f -i -g '*.md')" --preview "$batPreview"
+    local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
+    export FZF_DEFAULT_COMMAND="$query"
+    fzf --bind "del:reload(trash {} && $query)" --preview "$batPreview"
 }
 
 fzfPdf() {
 # FPDF: find preview pdf and postscript files
+    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
     local bind
     if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($pdfPreview {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
+        bind="enter:execute-silent($pdfPreview {} &>/dev/null),del:reload(trash {} && $query)"
     else
-        bind="enter:execute-silent(xdg-open {} &>/dev/null),del:reload(trash {} && fd -t f -i '^.*\.(pdf|ps|eps)$')"
+        bind="enter:execute-silent(xdg-open {} &>/dev/null),del:reload(trash {} && $query)"
     fi
-
-    fd -t f -i '^.*\.(pdf|ps|eps)$' | fzf --bind "$bind"
+    export FZF_DEFAULT_COMMAND="$query"
+    fzf --bind "$bind"
 }
 
 fzfMedia() {
 # FVID: find video files 
+    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi)$'"
     local bind
     if [[ $(command -v evince) ]]; then
-        bind="enter:execute-silent($mediaPreview {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
+        bind="enter:execute-silent($mediaPreview {}),del:reload(touch {} && $query)"
     else
-        bind="enter:execute-silent(xdg-open {}),del:reload(touch {} && fd -t f -i '^.*\.(mkv|mp4|webm|avi)$')"
+        bind="enter:execute-silent(xdg-open {}),del:reload(touch {} && $query)"
     fi
-
-    fd -t f -i '^.*\.(mkv|mp4|webm|avi)$' | fzf --bind "$bind"
+    export FZF_DEFAULT_COMMAND="$query"
+    fzf --bind "$bind"
 } 
 
 fzfFull() {
 # FULL: search inside files
+    local query preview
     if [[ $(command -v rga) ]]; then
-        rgFind="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite'"
-        rgPreview="[[ ! -z {} ]] && rga --pretty --context 10 {q} {}"
+        query="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite'"
+        preview="[[ ! -z {} ]] && rga --pretty --context 10 {q} {}"
     else
-        rgFind="rg -i --files-with-matches --no-messages"
-        rgPreview="rg --ignore-case --pretty --no-line-number --context 10 {q} {}"
+        query="rg -i --files-with-matches --no-messages"
+        preview="rg --ignore-case --pretty --no-line-number --context 10 {q} {}"
     fi
 
-    export FZF_DEFAULT_COMMAND="$rgFind '$1'"
-    fzf --preview "$rgPreview" \
+    export FZF_DEFAULT_COMMAND="$query '$1'"
+    fzf --preview "$preview" \
         --sort --phony -q "$1" \
-        --bind "change:reload:$rgFind {q}"
+        --bind "change:reload:$query {q}"
 }
 
 fzfCd() {
@@ -153,18 +167,18 @@ fzfCd() {
 fzfPs() {
 # FPS: search processes and manage them
 # f1 term, f2 kill, f3 sleep, f4 wake
-    psFind="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
+    local query="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
     # if grc is installed append it to command prefix
-    [ "$(command -v grc)" ] && psFind="grc --colour=on $psFind"
+    [ "$(command -v grc)" ] && query="grc --colour=on $query"
     # shellcheck disable=SC2031
-    export FZF_DEFAULT_COMMAND="$psFind"
+    export FZF_DEFAULT_COMMAND="$query"
     fzf --ansi --header-lines=1 --reverse --cycle \
         --header "f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONTv" \
-        --bind "change:reload($psFind),\
-f1:reload(kill -15 {1} && sleep 0.15 && $psFind),\
-f2:reload(kill -9 {1} && sleep 0.15 && $psFind),\
-f3:reload(kill -19 {1} && sleep 0.15 && $psFind),\
-f4:reload(kill -18 {1} && sleep 0.15 && $psFind)"
+        --bind "change:reload($query),\
+f1:reload(kill -15 {1} && sleep 0.15 && $query),\
+f2:reload(kill -9 {1} && sleep 0.15 && $query),\
+f3:reload(kill -19 {1} && sleep 0.15 && $query),\
+f4:reload(kill -18 {1} && sleep 0.15 && $query)"
 }
 
 case $1 in
@@ -175,6 +189,6 @@ case $1 in
     media) fzfMedia;;
     full) fzfFull "$2";;
     cd) fzfCd;;
-    ps) fzfPs "$2";;
+    ps) fzfPs;;
     *) fzfDefault;;
 esac
