@@ -12,7 +12,6 @@ printHelp() {
     \t\e[1m'cd'\e[0m show and cd to sub-directories;
     \t\e[1m'ps'\e[0m show and manage processes."
 }
-
 # SETTINGS
 # Load user configuration: $editor, $txtPreview, $pdfPreview, $mediaPreview, $colors
 configFile="$XDG_CONFIG_HOME/fzfx/config"
@@ -22,17 +21,6 @@ configFile="$XDG_CONFIG_HOME/fzfx/config"
 # Load ignore file
 ignoreFile="$XDG_CONFIG_HOME/fzfx/ignore"
 [ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
-
-# Search from absolute path if root is set
-# shellcheck disable=SC2154
-if [ "$root" ]; then
-    cd "$root" ||:
-fi
-
-# Try to set sensible alternatives for non-specified
-[ "$pdfPreview" ] || pdfPreview="evince -w"
-[ "$mediaPreview" ] || mediaPreview="mpv --no-terminal --length=5" # autoclose after 5s 
-[ "$txtPreview" ] || txtPreview="bat --style=numbers --color=always --line-range :500 {}"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
 if ! [ "$editor" ]; then
@@ -50,9 +38,27 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-# Colors
-# Uncomment with you want the colors from supernova-theme
-#colors="--color=\
+# Try to set sensible alternatives for non-specified
+[ "$txtPreview" ] || txtPreview="bat --style=numbers --color=always --line-range :500 {}"
+[ "$pdfPreview" ] || pdfPreview="evince -w"
+[ "$mediaPreview" ] || mediaPreview="mpv --no-terminal --length=5" # autoclose after 5s 
+
+# DEFAULTS
+# f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
+# f4 echoes path to stdout, del move file to trash.
+defaultBind="\
+f1:execute-silent(xdg-open {} 2>/dev/null),\
+f2:execute($editor {}),\
+f3:execute-silent(xclip <<< {}),\
+f4:accept,\
+del:reload(trash {} && $query),\
+enter:accept"
+
+defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
+defaultPreview="$txtPreview"
+defaultOpts="--preview-window=right:50%:wrap"
+
+#defaultColors="
 #dark,\
 #bg+:#373e47,\
 #bg:#2d333b,\
@@ -67,23 +73,8 @@ fi
 #prompt:#d40059,\
 #hl+:#ff5c00"
 
-# Binds
-# f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
-# f4 echoes path to stdout, del move file to trash.
-
-# open with nautilus is disabled because it's hanging the console after window is closed
-# f5:execute-silent(nautilus -w -s {} >/dev/null)
-
-# Defaults
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS \
---bind '\
-f1:execute-silent(xdg-open {} 2>/dev/null),\
-f2:execute($editor {}),\
-f3:execute-silent(xclip <<< {}),\
-f4:accept',\
-del:reload(trash {} && $query) \
---header 'f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete' \
--preview-window=right:60%:wrap ${colors:-}"
+# Export Defaults
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview  '$defaultPreview' $defaultOpts" #--colors $defaultColors
 
 # LIB
 # fd arguments:
@@ -91,29 +82,25 @@ del:reload(trash {} && $query) \
 # '-g' is glob; '--no-ignore-cvs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
 
 _fzf() {
-    export FZF_DEFAULT_COMMAND="$query"
     # shellcheck disable=SC2068
-    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${extra[@]}
+    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]}
 }
 
 fzfDefault() {
 # F: find almost anything
     local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile"
-    local preview="$txtPreview"
     _fzf
 }
 
 fzfHidden() {
 # FHIDDEN: find anything including hidden files
     local query="fd -t f -iuu"
-    local preview="$txtPreview"
     _fzf
 }
 
 fzfMd() {
 # FMD: find markdown notes
     local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
-    local preview="$txtPreview"
     _fzf
 }
 
@@ -155,14 +142,13 @@ fzfFull() {
         preview="rg --ignore-case --pretty --no-line-number --context 10 {q} {}"
     fi
     local bind="change:reload:$query_full {q}"
-    local extra=(--sort --phony)
+    local opts=(--sort --phony)
     _fzf
 }
 
 fzfCd() {
 # FCD: search dirs and cd to them
     local query="fd -t d -i"
-    local bind="enter:accept"
     local preview
     if [ "$(command -v tree)" ]; then
         preview="tree -C -c {} | head -200"
@@ -180,7 +166,7 @@ fzfPs() {
     # if grc is installed append it to command prefix
     [ "$(command -v grc)" ] && query="grc --colour=on $query"
     # shellcheck disable=SC2031
-    local extra=(--ansi --header-lines=1 --reverse --cycle)
+    local opts=(--ansi --header-lines=1 --reverse --cycle)
     local bind="change:reload($query),\
 f1:reload(kill -15 {1} && sleep 0.15 && $query),\
 f2:reload(kill -9 {1} && sleep 0.15 && $query),\
@@ -189,6 +175,13 @@ f4:reload(kill -18 {1} && sleep 0.15 && $query)"
     local header="f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONTv"
     _fzf
 }
+
+# MAIN
+# Search from absolute path if root is set
+# shellcheck disable=SC2154
+if [ "$root" ]; then
+    cd "$root" ||:
+fi
 
 case $1 in
     help) printHelp;;
