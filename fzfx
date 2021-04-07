@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # fzf specialized functional fuzzy searches
 # dependencies: fzf, ripgrep, fd, trash-cli 
 # optionals: ripgrep-all, grc
@@ -10,16 +10,17 @@ printHelp() {
     \t\e[1m'media'\e[0m videos and audio files;
     \t\e[1m'full'\e[0m full text search documents; 
     \t\e[1m'cd'\e[0m show and cd to sub-directories;
-    \t\e[1m'ps'\e[0m show and manage processes."
+    \t\e[1m'ps'\e[0m show and manage processes.\n"
 }
 # SETTINGS
+xdgConfigDir="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 # Load user configuration
-configFile="$XDG_CONFIG_HOME/fzfx/config"
+configFile="$xdgConfigDir/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
 
 # Load ignore file
-ignoreFile="$XDG_CONFIG_HOME/fzfx/ignore"
+ignoreFile="$xdgConfigDir/fzfx/ignore"
 [ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
@@ -27,7 +28,7 @@ if ! [ "$editor" ]; then
     editors=(vi vim nvim nano)
     # shellcheck disable=SC2153
     if [ "$EDITOR" ]; then
-        editor=$EDITOR
+        editor="$EDITOR"
     else
         for prog in "${editors[@]}"; do
             if [ "$(command -v "$prog")" ]; then
@@ -206,8 +207,8 @@ if [ "$root" ]; then
     cd "$root" ||:
 fi
 
-case $1 in
-    help) printHelp;;
+case "$1" in
+    help|-h|--help) printHelp;;
     hidden) fzfHidden;;
     md) fzfMd;;
     pdf) fzfPdf;;
