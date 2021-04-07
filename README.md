@@ -62,7 +62,7 @@ $ fzfx cd
 
 To change dir with ENTER create an alias:
 ```sh
-alias fcd='cd $(fzfx cd)'
+alias fcd='cd "$(fzfx cd)"'
 ```
 *Note: Needed because a child shell can't act on its parent.*
 
