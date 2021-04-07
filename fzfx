@@ -189,7 +189,7 @@ fzfPs() {
     # if grc is installed append it to command prefix
     [ "$(command -v grc)" ] && query="grc --colour=on $query"
     # shellcheck disable=SC2031
-    local opts=(--ansi --header-lines=1 --reverse --cycle)
+    local opts=(--ansi --header-lines=1 --reverse --cycle --preview-window hidden)
     local bind="change:reload($query),\
 f1:reload(kill -15 {1} && sleep 0.15 && $query),\
 f2:reload(kill -9 {1} && sleep 0.15 && $query),\
