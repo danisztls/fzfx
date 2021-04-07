@@ -101,4 +101,6 @@ Edit `$XDG_CONFIG_HOME/fzfx/config`
 - Set `root="$HOME"` to search all your files from anywhere.
 - Set `editor` to override the editor used by fzfx.
 - Set `ignoreFile` to override the default ignore file *(.gitignore style)*.
-- Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer. 
+- Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
+
+*Note: All configurations are optional.*
