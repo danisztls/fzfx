@@ -6,7 +6,7 @@
 
 * [Features](#features)
     * [Find files anywhere](#find-files-anywhere)
-    * [Fin anything](#fin-anything)
+    * [Find anything](#find-anything)
     * [Dynamically find a string inside files](#dynamically-find-a-string-inside-files)
     * [Change directory](#change-directory)
     * [Manage processes](#manage-processes)
