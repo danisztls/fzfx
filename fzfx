@@ -13,14 +13,14 @@ printHelp() {
     \t\e[1m'ps'\e[0m show and manage processes.\n"
 }
 # SETTINGS
-xdgConfigDir="${XDG_CONFIG_HOME:-"$HOME/.config"}"
+configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}"
 # Load user configuration
-configFile="$xdgConfigDir/fzfx/config"
+configFile="$configDir/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
 
 # Load ignore file
-ignoreFile="$xdgConfigDir/fzfx/ignore"
+ignoreFile="$configDir/fzfx/ignore"
 [ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
