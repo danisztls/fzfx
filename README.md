@@ -36,7 +36,7 @@ It is agnostic and does not require a specific terminal emulator, desktop enviro
 $ fzfx
 ```
 
-### Fin anything
+### Find anything
 [![asciicast](https://asciinema.org/a/405581.svg)](https://asciinema.org/a/405581)
 
 ```sh
