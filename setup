@@ -1,7 +1,7 @@
 #!/bin/bash
 
 bin="$HOME/.local/bin"
-config="$XDG_CONFIGHOME/fzfx"
+config="$XDG_CONFIG_HOME/fzfx"
 
 doInstall() {
     # Install binaries
