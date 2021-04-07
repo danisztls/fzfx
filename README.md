@@ -6,7 +6,7 @@
 
 * [Features](#features)
     * [Find files anywhere](#find-files-anywhere)
-    * [Fin anything](#fin-anything)
+    * [Find anything](#find-anything)
     * [Dynamically find a string inside files](#dynamically-find-a-string-inside-files)
     * [Change directory](#change-directory)
     * [Manage processes](#manage-processes)
@@ -62,7 +62,7 @@ $ fzfx cd
 
 To change dir with ENTER create an alias:
 ```sh
-alias fcd='cd $(fzfx cd)'
+alias fcd='cd "$(fzfx cd)"'
 ```
 *Note: Needed because a child shell can't act on its parent.*
 
