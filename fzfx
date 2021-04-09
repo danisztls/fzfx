@@ -47,7 +47,6 @@ f1:execute-silent(xdg-open {} 2>/dev/null),\
 f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept,\
-del:reload(trash {} && $query),\
 enter:accept"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
 
@@ -85,7 +84,8 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defa
 _fzf() {
     export FZF_DEFAULT_COMMAND="$query"
     # shellcheck disable=SC2068
-    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]}
+    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]} \
+    --bind "del:reload(trash {} && $query)" # can't be on $defaultBind as $query need to be declared
 }
 
 fzfDefault() {
