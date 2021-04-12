@@ -2,6 +2,7 @@
 # fzf specialized functional fuzzy searches
 # dependencies: fzf, ripgrep, fd, trash-cli 
 # optionals: ripgrep-all, grc
+# HELP
 printHelp() {
     printf "USAGE:
     \t\e[1m'hidden'\e[0m hidden files excluding .git and .cache;
@@ -12,9 +13,10 @@ printHelp() {
     \t\e[1m'cd'\e[0m show and cd to sub-directories;
     \t\e[1m'ps'\e[0m show and manage processes.\n"
 }
-# SETTINGS
+
+# CONFIG FILE
+# Load config file
 configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}"
-# Load user configuration
 configFile="$configDir/fzfx/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
@@ -39,11 +41,27 @@ if ! [ "$editor" ]; then
     fi
 fi
 
+# SEARCH PATH
+# Backward compatibility with $root
 # shellcheck disable=SC2154
 if [ "$root" ]; then
-    acceptCmd="echo $root/{}" 
-else
-    acceptCmd="echo {}" 
+    searchPath="$root"
+fi
+
+# Parse arguments
+# TODO: Make it work with ~
+# when only argument is inputted is it mode or searchPath?
+if [ $# -eq 1 ] && [ -d "$1" ]; then
+    searchPath="$1"
+elif [ $# -eq 2 ]; then
+    searchPath="$2"
+elif [ $# -gt 2 ]; then
+    echo "Error, exceding number of arguments!" && exit 1
+fi
+
+# Check if a valid path is inputted and otherwise set $HOME
+if ! [ -d "$searchPath" ]; then
+    searchPath="$HOME"
 fi
 
 # DEFAULTS
@@ -54,7 +72,7 @@ f1:execute-silent(xdg-open {} 2>/dev/null),\
 f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept,\
-enter:execute($acceptCmd)+abort"
+enter:execute(echo $searchPath/{})+abort"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
 
 if [ "$(command -v bat)" ]; then
@@ -212,14 +230,12 @@ f4:reload(kill -18 {1} && sleep 0.15 && $query)"
 # Store local path for later use
 pwd="$PWD" 
 
-# If a valid path is inputted use it as root
-if [ -d "$2" ]; then 
-    root="$2"
-fi
-
-# If root is set change directory to it
-if [ "$root" ]; then
-    cd "$root" ||:
+# Change directory to searchPath
+# if searchLocal is on it will not cd
+# shellcheck disable=SC2154 # it's external
+if ! [ "$searchLocal" ]; then
+    # shellcheck disable=SC2164 # unneeded
+    cd "$searchPath"
 fi
 
 case "$1" in
