@@ -39,7 +39,6 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-unset root
 # shellcheck disable=SC2154
 if [ "$root" ]; then
     acceptCmd="echo $root/{}" 
@@ -164,6 +163,7 @@ fzfPic() {
 fzfFull() {
 # FULL: search inside files
 # $1 is returned by fzf
+# FIXME: It's taking a long time to open files because it's waiting for query to finish. Should be async.
     local query="echo Type to search..."
     local preview
     if [[ $(command -v rga) ]]; then
