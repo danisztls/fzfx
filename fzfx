@@ -39,6 +39,14 @@ if ! [ "$editor" ]; then
     fi
 fi
 
+unset root
+# shellcheck disable=SC2154
+if [ "$root" ]; then
+    acceptCmd="echo $root/{}" 
+else
+    acceptCmd="echo {}" 
+fi
+
 # DEFAULTS
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
 # f4 echoes path to stdout, del move file to trash.
@@ -47,7 +55,7 @@ f1:execute-silent(xdg-open {} 2>/dev/null),\
 f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept,\
-enter:execute(echo $root/{})+abort"
+enter:execute($acceptCmd)+abort"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
 
 if [ "$(command -v bat)" ]; then
