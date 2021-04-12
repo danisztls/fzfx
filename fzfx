@@ -68,9 +68,9 @@ fi
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
 # f4 echoes path to stdout, del move file to trash.
 defaultBind="\
-f1:execute-silent(xdg-open {} 2>/dev/null),\
-f2:execute($editor {}),\
-f3:execute-silent(xclip <<< {}),\
+f1:execute-silent(xdg-open {} 2>/dev/null)+cancel,\
+f2:execute($editor {})+cancel,\
+f3:execute-silent(xclip <<< {})+cancel,\
 f4:accept,\
 enter:execute(echo $searchPath/{})+abort"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
@@ -181,7 +181,6 @@ fzfPic() {
 fzfFull() {
 # FULL: search inside files
 # $1 is returned by fzf
-# FIXME: It's taking a long time to open files because it's waiting for query to finish. Should be async.
     local query="echo Type to search..."
     local preview
     if [[ $(command -v rga) ]]; then
