@@ -7,12 +7,14 @@
 <!-- TOC GFM -->
 
 * [Features](#features)
-    * [Find files anywhere](#find-files-anywhere)
-    * [Find anything](#find-anything)
-    * [Dynamically find a string inside files](#dynamically-find-a-string-inside-files)
-    * [Change directory](#change-directory)
-    * [Manage processes](#manage-processes)
-    * [Find files with special cases](#find-files-with-special-cases)
+  * [Find files anywhere](#find-files-anywhere)
+  * [Find anything](#find-anything)
+  * [Dynamically find a string inside files](#dynamically-find-a-string-inside-files)
+  * [Change directory](#change-directory)
+  * [Copy files](#copy-files)
+  * [Move files](#move-files)
+  * [Manage processes](#manage-processes)
+  * [Find files with special cases](#find-files-with-special-cases)
 * [Setup](#setup)
 * [Configure](#configure)
 
@@ -27,6 +29,8 @@
 - **pic**: pictures
 - **av**: audio and video
 - **cd**: change directory
+- **cp:** copy files
+- **mv**: move files
 - **ps**: manage processes
 
 It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It will make use of improved utils that are becoming standard at Linux desktop environments, like **rg**, **fd**, **bat**, **rga**, **grc** and many others. But it will sensibly fallback to their classic UNIX counterparts like **grep**, **cat** and **ls** when they are not available.
@@ -35,7 +39,15 @@ It is agnostic and does not require a specific terminal emulator, desktop enviro
 [![asciicast](https://asciinema.org/a/405579.svg)](https://asciinema.org/a/405579)
 
 ```sh
-$ fzfx
+fzfx
+```
+
+By default it will use `$HOME` as the search path but that can be overrided or disabled entirely.
+
+Alternatively the search path can be inputted in the command. Which will work for all modes.
+
+```
+fzfx <searchPath>
 ```
 
 ### Find anything
@@ -51,7 +63,7 @@ By default hidden files, cache/vendor directories like `node_modules` *(see /usr
 [![asciicast](https://asciinema.org/a/405583.svg)](https://asciinema.org/a/405583)
 
 ```sh
-$ fzfx full
+fzfx full
 ```
 
 *Note: Supports regular expressions.*
@@ -59,7 +71,7 @@ $ fzfx full
 ### Change directory
 [![asciicast](https://asciinema.org/a/405594.svg)](https://asciinema.org/a/405594)
 ```sh
-$ fzfx cd
+fzfx cd
 ```
 
 To change dir with ENTER create an alias:
@@ -68,17 +80,28 @@ alias fcd='cd "$(fzfx cd)"'
 ```
 *Note: Needed because a child shell can't act on its parent.*
 
+
+### Copy files
+```sh
+fzfx cp
+```
+
+### Move files
+```sh
+fzfx mv
+```
+
 ### Manage processes 
 [![asciicast](https://asciinema.org/a/405584.svg)](https://asciinema.org/a/405584)
 
 ```sh
-$ fzfx ps
+fzfx ps
 ```
 
 ### Find files with special cases
 ```sh
 # markdown notes
-$ fzfx md
+fzfx md
 
 # pdf, ps and eps
 fzfx pdf
@@ -95,12 +118,13 @@ Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git)
 
 Or install as user
 ```sh
-$ ./setup install
+./setup install
 ```
 ## Configure
 Edit `$XDG_CONFIG_HOME/fzfx/config`
 
-- Set `root="$HOME"` to search all your files from anywhere.
+- Set `searchPath` to override the global search path.
+- Set `searchLocal=true` to always search locally.
 - Set `editor` to override the editor used by fzfx.
 - Set `ignoreFile` to override the default ignore file *(.gitignore style)*.
 - Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
