@@ -47,7 +47,7 @@ f1:execute-silent(xdg-open {} 2>/dev/null),\
 f2:execute($editor {}),\
 f3:execute-silent(xclip <<< {}),\
 f4:accept,\
-enter:accept"
+enter:execute(echo $root/{})+abort"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
 
 if [ "$(command -v bat)" ]; then
