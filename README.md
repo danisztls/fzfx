@@ -82,11 +82,15 @@ alias fcd='cd "$(fzfx cd)"'
 
 
 ### Copy files
+[![asciicast](https://asciinema.org/a/406774.svg)](https://asciinema.org/a/406774)
+
 ```sh
 fzfx cp
 ```
 
 ### Move files
+[![asciicast](https://asciinema.org/a/406775.svg)](https://asciinema.org/a/406775)
+
 ```sh
 fzfx mv
 ```
