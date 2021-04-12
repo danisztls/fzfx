@@ -209,8 +209,15 @@ f4:reload(kill -18 {1} && sleep 0.15 && $query)"
 }
 
 # MAIN
-# Search from absolute path if root is set
-# shellcheck disable=SC2154
+# Store local path for later use
+pwd="$PWD" 
+
+# If a valid path is inputted use it as root
+if [ -d "$2" ]; then 
+    root="$2"
+fi
+
+# If root is set change directory to it
 if [ "$root" ]; then
     cd "$root" ||:
 fi
@@ -224,6 +231,8 @@ case "$1" in
     pic) fzfPic;;
     full) fzfFull;;
     cd) fzfCd;;
+    cp) cp -n "$(fzfDefault)" "$pwd/";;
+    mv) mv -n "$(fzfDefault)" "$(fzfCd)";;
     ps) fzfPs;;
     *) fzfDefault;;
 esac
