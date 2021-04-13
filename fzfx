@@ -16,13 +16,13 @@ printHelp() {
 
 # CONFIG FILE
 # Load config file
-configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}"
-configFile="$configDir/fzfx/config"
+configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}/fzfx"
+configFile="$configDir/config"
 #shellcheck disable=SC1090
 [ -f "$configFile" ] && source "$configFile"
 
 # Load ignore file
-ignoreFile="$configDir/fzfx/ignore"
+ignoreFile="$configDir/ignore"
 [ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
