@@ -78,8 +78,12 @@ To change dir with ENTER create an alias:
 ```sh
 alias fcd='cd "$(fzfx cd)"'
 ```
+
 *Note: Needed because a child shell can't act on its parent.*
 
+If you don't know how aliases work, try using [this](https://github.com/lbcnz/dotfiles/blob/main/shell/aliases) configuration as an example.
+
+*Note: Aliases must be put or be sourced in `.profile` or RC files like `.bashrc` so to work persistently.*
 
 ### Copy any file to current dir
 [![asciicast](https://asciinema.org/a/406774.svg)](https://asciinema.org/a/406774)
