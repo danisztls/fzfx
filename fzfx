@@ -184,13 +184,13 @@ fzfFull() {
     local query="echo Type to search..."
     local preview
     if [[ $(command -v rga) ]]; then
-        query_full="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' $1"
+        queryFull="rga -i --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' $1"
         preview="[[ ! -z {} ]] && rga --pretty --context 10 {q} {}"
     else
-        query_full="rg -i --files-with-matches --no-messages $1"
+        queryFull="rg -i --files-with-matches --no-messages $1"
         preview="rg --ignore-case --pretty --no-line-number --context 10 {q} {}"
     fi
-    local bind="change:reload:$query_full {q}"
+    local bind="change:reload:$queryFull {q}"
     local opts=(--sort --phony)
     _fzf
 }
