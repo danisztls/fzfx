@@ -10,6 +10,14 @@ I don't think added functionality exceeds extra complexity but apparently 'chang
 
 Related: https://github.com/junegunn/fzf/issues/2423 
 
+### Use shell buffer
+Make an alternative mode that uses the buffer in the same way that fzf does
+
+### Zsh plugin
+
+### Integration with Greenclip
+https://github.com/erebe/greenclip
+
 ## Bugs
 Full mode is hanging when opening file. What is happening is that queries aren't getting aborted so Fzf hangs in the background waiting queries to finish. Bug is difficult to observe and apparently fixed.
 
