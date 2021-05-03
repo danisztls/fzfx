@@ -10,7 +10,7 @@ doInstall() {
 
     # Install config
     mkdir -p "$config"
-    cp -n config ignore "$config/"
+    cp -n ignore "$config/"
 }
 
 doUninstall() {
