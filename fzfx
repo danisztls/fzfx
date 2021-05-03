@@ -140,7 +140,7 @@ fzfPdf() {
     elif [ "$(command -v evince)" ]; then
         pdfView="evince -w"
     else
-        pdfView"xdg-open"
+        pdfView="xdg-open"
         local bind="enter:execute-silent($pdfView {} 2>/dev/null)"
     fi
     _fzf
