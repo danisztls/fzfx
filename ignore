@@ -1,6 +1,132 @@
-.git/
+# This template is meant for general use and try to avoid false positives
+
+# Check Github templates for many specific environments
+# https://github.com/github/gitignore/ 
+
+# GENERAL 
+# -------
+# Cache
+.cache*
 cache/
+_cache/
+*-cache/
+tmp/
+
+# Linux
+.Trash-*
+.fuse_hidden*
+.nfs*
+.directory
+
+# Version Control
+*.patch
+*.diff
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+.git/
+.gitattributes
+.github
+
+.bzr/
+.bzrignore
+
+.cvsignore
+*/.cvsignore
+/CVS/*
+**/CVS/*
+
+.svn/
+
+# LANGS
+# -----
+# Ruby
 gems/
+*.gem
+*.rbc
+.bundle/
+vendor/bundle
+
+# Node
 node_modules/
+jspm_packages/
+web_modules/
+build/Release
+*.tsbuildinfo
+.npm
+.eslintcache
+.rpt2_cache/
+.rts2_cache*/
+.fusebox/
+
+# Python
 __pycache__/
+__pypackages__/
 site_packages/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+.installed.cfg
+*.egg
+*.manifest
+*.spec
+
+# IDEs
+# ----
+
+*~
+
+# Vim
+[._]*.un~
+[._]*.s[a-v][a-z] # swap
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+
+# Emacs
+\#*\#
+.\#*
+/.emacs.desktop*
+*.elc
+auto-save-list
+.org-id-locations
+*_archive
+*_flymake.*
+/eshell/history
+/eshell/lastdir
+*.rel
+flycheck_*.el
+.projectile
+.dir-locals.el
+/network-security.data
+
+# VSCode
+.vscode/*
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+# JetBrains
+.idea/**/
+.idea_modules/
+*.iws
+cmake-build-*/
+
+# MISC
+# ----
+# LibreOffice
+.~lock.*#
+
+# Jekyll
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
