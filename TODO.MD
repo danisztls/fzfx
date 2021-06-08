@@ -3,6 +3,8 @@
 - Write unit testing
 - Write CI script to update AUR version
 - Write issue templates for bugs and features 
+- Support moving folders with fmv
+- Change trashing shortcut from DEL to something like ^D, to avoid mistakes
 
 ## Features
 ### Switch modes in-program
