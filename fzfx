@@ -115,25 +115,25 @@ _fzf() {
 
 fzfDefault() {
 # DEFAULT: find almost anything
-    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile"
+    local query="fd -t f -i -L --no-ignore-vcs --ignore-file $ignoreFile"
     _fzf
 }
 
 fzfHidden() {
 # HIDDEN: find anything including hidden files
-    local query="fd -t f -iuu"
+    local query="fd -t f -L -iuu"
     _fzf
 }
 
 fzfMd() {
 # MD: find markdown notes
-    local query="fd -t f -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
+    local query="fd -t f -L -i -g '*.md' --no-ignore-vcs --ignore-file $ignoreFile"
     _fzf
 }
 
 fzfPdf() {
 # PDF: find preview pdf and postscript files
-    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
+    local query="fd -t f -L -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(pdf|ps|eps)$'"
     local bind
     if [ "$pdfView" ]; then
         return
@@ -148,7 +148,7 @@ fzfPdf() {
 
 fzfAv() {
 # AV: find video and audio files 
-    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
+    local query="fd -t f -L -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
     local bind
     if [ "$avView" ]; then
         return
@@ -164,7 +164,7 @@ fzfAv() {
 
 fzfPic() {
 # PIC: find pictures, video and audio files 
-    local query="fd -t f -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
+    local query="fd -t f -L -i --no-ignore-vcs --ignore-file $ignoreFile '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
     if [ "$picView" ]; then
         return
     elif [ "$(command -v feh)"  ]; then
@@ -197,7 +197,7 @@ fzfFull() {
 
 fzfCd() {
 # FCD: search dirs and cd to them
-    local query="fd -t d -i"
+    local query="fd -t d -L -i"
     local preview
     if [ "$(command -v tree)" ]; then
         preview="tree -C -c {} | head -200"
