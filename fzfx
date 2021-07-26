@@ -66,14 +66,14 @@ fi
 
 # DEFAULTS
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
-# f4 echoes path to stdout, del move file to trash.
+# f4 echoes path to stdout, alt+shift+d move file to trash.
 defaultBind="\
 f1:execute-silent(xdg-open {} 2>/dev/null)+cancel,\
 f2:execute($editor {})+cancel,\
 f3:execute-silent(xclip <<< {})+cancel,\
 f4:accept,\
 enter:execute(echo $searchPath/{})+abort"
-defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, del → delete"
+defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, alt+shift+d → delete"
 
 if [ "$(command -v bat)" ]; then
     defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
@@ -110,7 +110,7 @@ _fzf() {
     export FZF_DEFAULT_COMMAND="$query"
     # shellcheck disable=SC2068
     fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]} \
-    --bind "del:reload(trash {} && $query)" # can't be on $defaultBind as $query need to be declared
+    --bind "alt-D:reload(trash {} && $query)" # can't be on $defaultBind as $query need to be declared
 }
 
 fzfDefault() {
