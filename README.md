@@ -2,8 +2,6 @@
 
 **fzfX** multiplies the power of [fzf](https://github.com/junegunn/fzf) by providing zero-configuration battle-tested applications to common use cases of fzf. It delivers the power of finding, previewing, editing and managing any file in few key strokes. 
 
-[![GitHub Super-Linter](https://github.com/lbcnz/fzfx/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
-
 <!-- TOC GFM -->
 
 * [Features](#features)
