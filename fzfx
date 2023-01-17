@@ -104,7 +104,7 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defa
 # LIB
 # fd arguments:
 # '-t' is type; '-uu' is a short for '--no-ignore' and '--hidden'; '-i' is '--ignore-case';
-# '-g' is glob; '--no-ignore-cvs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
+# '-g' is glob; '--no-ignore-vcs' don't ignore '.gitignore'; '--ignore-file' load an ignore file
 
 _fzf() {
     export FZF_DEFAULT_COMMAND="$query"
@@ -115,7 +115,7 @@ _fzf() {
 
 fzfDefault() {
 # DEFAULT: find almost anything
-    local query="fd -t f -i -L --no-ignore-vcs --ignore-file $ignoreFile"
+    local query="fd -t f -L -i --no-ignore-vcs --ignore-file $ignoreFile"
     _fzf
 }
 
@@ -197,7 +197,7 @@ fzfFull() {
 
 fzfCd() {
 # FCD: search dirs and cd to them
-    local query="fd -t d -L -i"
+    local query="fd -t d -L -i --no-ignore-vcs --ignore-file $ignoreFile"
     local preview
     if [ "$(command -v tree)" ]; then
         preview="tree -C -c {} | head -200"
