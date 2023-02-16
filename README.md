@@ -79,7 +79,7 @@ alias fcd='cd "$(fzfx cd)"'
 
 *Note: Needed because a child shell can't act on its parent.*
 
-If you don't know how aliases work, try using [this](https://github.com/lbcnz/dotfiles/blob/main/shell/aliases) configuration as an example.
+If you don't know how aliases work, try using [this](https://github.com/danisztls/dotfiles/blob/main/shell/aliases) configuration as an example.
 
 *Note: Aliases must be put or be sourced in `.profile` or RC files like `.bashrc` so to work persistently.*
 
