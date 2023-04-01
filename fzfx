@@ -83,23 +83,8 @@ fi
 
 defaultOpts="--preview-window=right:50%:wrap"
 
-#defaultColors="
-#dark,\
-#bg+:#373e47,\
-#bg:#2d333b,\
-#spinner:#6bac00,\
-#hl:#0087e9,\
-#fg:#adbac7,\
-#header:#009385,\
-#info:#d9b600,\
-#pointer:#b37eff,\
-#marker:#cf2424,\
-#fg+:#dddddd,\
-#prompt:#d40059,\
-#hl+:#ff5c00"
-
 # Export Defaults
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts" #--colors $defaultColors
+export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
 
 # LIB
 # fd arguments:
