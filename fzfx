@@ -178,7 +178,7 @@ fzfFull() {
 
 fzfCd() {
 # FCD: search dirs and cd to them
-    local query="fd --type file --follow --ignore-case --no-ignore-vcs --ignore-file $ignoreFile"
+    local query="fd --type directory --follow --ignore-case --no-ignore-vcs --ignore-file $ignoreFile"
     local preview
     if [ "$(command -v tree)" ]; then
         preview="tree -C -c {} | head -200"
