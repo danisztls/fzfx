@@ -41,6 +41,11 @@ if ! [ "$editor" ]; then
     fi
 fi
 
+# Set clipboard: use $clipboard from config, otherwise, use `xclip`
+if ! [ "$clipboard" ]; then
+    clipboard=xclip
+fi
+
 # SEARCH PATH
 # Backward compatibility with $root
 # shellcheck disable=SC2154
@@ -70,7 +75,7 @@ fi
 defaultBind="\
 f1:execute-silent(xdg-open {} 2>/dev/null)+cancel,\
 f2:execute($editor {})+cancel,\
-f3:execute-silent(xclip <<< {})+cancel,\
+f3:execute-silent($clipboard <<< {})+cancel,\
 f4:accept,\
 enter:execute(echo $searchPath/{})+abort"
 defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, alt+shift+d → delete"
