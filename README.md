@@ -122,11 +122,6 @@ fzfx av
 ## Setup
 Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git).
 
-Or install as user:
-```sh
-./setup install
-```
-
 ## Configure
 Edit `$XDG_CONFIG_HOME/fzfx/config`
 
