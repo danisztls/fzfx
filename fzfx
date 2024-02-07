@@ -169,10 +169,12 @@ fzfFull() {
 # $1 is returned by fzf
     local query="echo Type to search..."
     local preview
-    if [[ $(command -v rga) ]]; then
+    if [[ $(command -v rga) ]] && ! [ "$FZFX_DISABLE_RGA" = "True" ]; then
+        # use ripgrep-all
         queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile $1"
         preview="rga --ignore-case --no-ignore-vcs --pretty --context 10 {q} {}"
     else
+        # use ripgrep
         queryFull="rg --ignore-case --no-ignore-vcs --files-with-matches --no-messages --ignore-file $ignoreFile $1"
         preview="rg --ignore-case --no-ignore-vcs --pretty --no-line-number --context 10 {q} {}"
     fi
