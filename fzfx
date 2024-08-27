@@ -73,11 +73,11 @@ fi
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
 # f4 echoes path to stdout, alt+shift+d move file to trash.
 defaultBind="\
-enter:print()+accept,\
+enter:become(printf $searchPath/{}),\
 f1:become(xdg-open {} 2>/dev/null),\
 f2:become($editor {}),\
 f3:become($clipboard <<< {}),\
-f4:print()+accept"
+f4:become(printf $searchPath/{})"
 defaultHeader="enter → default, f1 → open, f2 → edit, f3 → clip, f4 → print, alt+shift+d → delete, esc → exit"
 
 if [ "$(command -v bat)" ]; then
@@ -86,7 +86,7 @@ else
     defaultPreview="cat {}"
 fi
 
-defaultOpts="--preview-window=right:50%:wrap --print0"
+defaultOpts="--preview-window=right:50%:wrap"
 
 # Export Defaults
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
