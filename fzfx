@@ -73,12 +73,12 @@ fi
 # f1 opens with xdg-open, f2 opens with text editor, f3 copy path to console clipboard,
 # f4 echoes path to stdout, alt+shift+d move file to trash.
 defaultBind="\
-f1:execute-silent(xdg-open {} 2>/dev/null)+cancel,\
-f2:execute($editor {})+cancel,\
-f3:execute-silent($clipboard <<< {})+cancel,\
-f4:accept,\
-enter:execute(echo $searchPath/{})+abort"
-defaultHeader="f1 → default, f2 → editor, f3 → clipboard, f4 → terminal, alt+shift+d → delete"
+enter:print()+accept,\
+f1:become(xdg-open {} 2>/dev/null),\
+f2:become($editor {}),\
+f3:become($clipboard <<< {}),\
+f4:print()+accept"
+defaultHeader="enter → default, f1 → open, f2 → edit, f3 → clip, f4 → print, alt+shift+d → delete, esc → exit"
 
 if [ "$(command -v bat)" ]; then
     defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
@@ -86,7 +86,7 @@ else
     defaultPreview="cat {}"
 fi
 
-defaultOpts="--preview-window=right:50%:wrap"
+defaultOpts="--preview-window=right:50%:wrap --print0"
 
 # Export Defaults
 export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
@@ -127,8 +127,9 @@ fzfPdf() {
         pdfView="evince --preview"
     else
         pdfView="xdg-open"
-        local bind="enter:execute-silent($pdfView {} 2>/dev/null)"
     fi
+    local bind="enter:execute-silent($pdfView {} 2>/dev/null)"
+    local opts=(--preview-window hidden)
     _fzf
 }
 
@@ -192,7 +193,6 @@ fzfCd() {
     else
         preview="ls --color=always {} | head -200"
     fi
-    local header="f1 → browser, f2 → editor, enter → cd"
     _fzf
 }
 
@@ -204,7 +204,9 @@ fzfPs() {
     [ "$(command -v grc)" ] && query="grc --colour=on $query"
     # shellcheck disable=SC2031
     local opts=(--ansi --header-lines=1 --reverse --cycle --preview-window hidden)
-    local bind="change:reload($query),\
+    local bind="\
+start:unbind(enter)+unbind(alt-D),\
+change:reload($query),\
 f1:reload(kill -15 {1} && sleep 0.15 && $query),\
 f2:reload(kill -9 {1} && sleep 0.15 && $query),\
 f3:reload(kill -19 {1} && sleep 0.15 && $query),\
