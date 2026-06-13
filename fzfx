@@ -90,12 +90,6 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 # SEARCH PATH
-# Backward compatibility with $root
-# shellcheck disable=SC2154
-if [ "${root:-}" ]; then
-    searchPath="$root"
-fi
-
 # Parse arguments
 # TODO: Make it work with ~
 # when only argument is inputted is it mode or searchPath?

@@ -102,5 +102,3 @@ Edit `$XDG_CONFIG_HOME/fzfx/config`
 - Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
 
 _Note: All configurations are optional._
-
-_Note: $root is still supported but support will be dropped in a future release. So update your config file._
