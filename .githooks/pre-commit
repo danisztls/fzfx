@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Lint staged shell scripts with shellcheck before each commit.
+# Enable in a fresh clone with: git config core.hooksPath .githooks
+set -eu
+
+command -v shellcheck >/dev/null 2>&1 || {
+    echo "pre-commit: shellcheck not found, skipping lint" >&2
+    exit 0
+}
+
+status=0
+while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    shellcheck "$f" || status=1
+done < <(git diff --cached --name-only --diff-filter=ACM -- fzfx '*.sh' '*.bash' .githooks/pre-commit)
+
+exit "$status"
