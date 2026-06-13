@@ -44,7 +44,8 @@ expandTilde() {
 # Load config file
 configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}/fzfx"
 configFile="$configDir/config"
-#shellcheck disable=SC1090
+# config is optional and its path is dynamic, so don't try to follow it
+# shellcheck source=/dev/null
 [ -f "$configFile" ] && source "$configFile"
 
 # Load ignore file
@@ -59,7 +60,6 @@ fdBase="fd --follow --ignore-case --no-ignore-vcs --ignore-file $ignoreFile"
 if ! [ "${editor:-}" ]; then
     # fallback chain, easiest to use first (not a preference; only used when $EDITOR is unset)
     editors=(nano micro vim nvim vi)
-    # shellcheck disable=SC2153
     if [ "${EDITOR:-}" ]; then
         editor="$EDITOR"
     else
@@ -211,19 +211,17 @@ fzfPic() {
     _fzf
 } 
 
-# shellcheck disable=SC2120
 fzfFull() {
 # FULL: search inside files
-# $1 is returned by fzf
     local query="echo Type to search..."
     local preview
     if [[ $(command -v rga) ]] && ! [ "${FZFX_DISABLE_RGA:-}" = "True" ]; then
         # use ripgrep-all
-        queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile ${1:-}"
+        queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile"
         preview="rga --ignore-case --no-ignore-vcs --pretty --context 10 {q} {}"
     else
         # use ripgrep
-        queryFull="rg --ignore-case --no-ignore-vcs --files-with-matches --no-messages --ignore-file $ignoreFile ${1:-}"
+        queryFull="rg --ignore-case --no-ignore-vcs --files-with-matches --no-messages --ignore-file $ignoreFile"
         preview="rg --ignore-case --no-ignore-vcs --pretty --no-line-number --context 10 {q} {}"
     fi
     local bind="change:reload($queryFull {q} || true)+preview($preview)"
@@ -249,7 +247,6 @@ fzfPs() {
     local query="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
     # if grc is installed append it to command prefix
     [ "$(command -v grc)" ] && query="grc --colour=on $query"
-    # shellcheck disable=SC2031
     local opts=(--ansi --header-lines=1 --reverse --cycle --preview-window hidden)
     local bind="\
 start:unbind(enter)+unbind(alt-D),\
@@ -268,10 +265,8 @@ pwd="$PWD"
 
 # Change directory to searchPath
 # if searchLocal is on it will not cd
-# shellcheck disable=SC2154 # it's external
 if ! [ "${searchLocal:-}" ]; then
-    # shellcheck disable=SC2164 # unneeded
-    cd "$searchPath"
+    cd "$searchPath" || exit 1
 fi
 
 case "${1:-}" in
