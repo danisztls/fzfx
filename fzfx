@@ -10,6 +10,13 @@ set -euo pipefail
 # True if a command is available on PATH.
 _has() { command -v "$1" >/dev/null 2>&1; }
 
+# Version string. Replaced at install time (see Makefile); from a checkout the
+# placeholder is resolved via git, otherwise it reads "unknown".
+version="@VERSION@"
+# This script's directory, captured before the later cd so the version fallback
+# can still locate the git checkout.
+selfDir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)" || selfDir=""
+
 # HELP
 printHelp() {
     printf "fzfx — fzf-powered fuzzy finder for common file and process tasks
@@ -29,9 +36,19 @@ MODES:
     \e[1mcp\e[0m      copy a selected file to the current directory;
     \e[1mmv\e[0m      move a selected file to a selected directory;
     \e[1mps\e[0m      list and manage processes;
+    \e[1mversion\e[0m show version (also -V, --version);
     \e[1mhelp\e[0m    show this help (also -h, --help).
 
 PATH defaults to \$HOME. Override via searchPath/searchLocal in the config.\n"
+}
+
+# VERSION
+printVersion() {
+    local v="$version"
+    case "$v" in
+        @*) v="$(git -C "${selfDir:-.}" describe --tags 2>/dev/null || echo unknown)" ;;
+    esac
+    printf 'fzfx %s\n' "$v"
 }
 
 # Expand a leading ~ or ~/ to $HOME. The shell only does this for unquoted
@@ -263,6 +280,7 @@ fi
 
 case "${1:-}" in
     help|-h|--help) printHelp;;
+    version|-V|--version) printVersion;;
     hidden) fzfHidden;;
     md) fzfMd;;
     pdf) fzfPdf;;
