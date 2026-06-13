@@ -9,14 +9,26 @@ set -euo pipefail
 
 # HELP
 printHelp() {
-    printf "USAGE:
-    \t\e[1m'hidden'\e[0m hidden files excluding .git and .cache;
-    \t\e[1m'md'\e[0m markdown files;
-    \t\e[1m'pdf'\e[0m pdf and postscript files;
-    \t\e[1m'media'\e[0m videos and audio files;
-    \t\e[1m'full'\e[0m full text search documents; 
-    \t\e[1m'cd'\e[0m show and cd to sub-directories;
-    \t\e[1m'ps'\e[0m show and manage processes.\n"
+    printf "fzfx — fzf-powered fuzzy finder for common file and process tasks
+
+USAGE:
+    fzfx [MODE] [PATH]
+
+MODES:
+    \e[1m(none)\e[0m  find files (the default);
+    \e[1mhidden\e[0m  find files, including hidden (.git and .cache excluded);
+    \e[1mmd\e[0m      find markdown files;
+    \e[1mpdf\e[0m     find and preview pdf and postscript files;
+    \e[1mav\e[0m      find and play audio and video files;
+    \e[1mpic\e[0m     find and view pictures;
+    \e[1mfull\e[0m    full-text search inside files;
+    \e[1mcd\e[0m      list sub-directories and print the selected one;
+    \e[1mcp\e[0m      copy a selected file to the current directory;
+    \e[1mmv\e[0m      move a selected file to a selected directory;
+    \e[1mps\e[0m      list and manage processes;
+    \e[1mhelp\e[0m    show this help (also -h, --help).
+
+PATH defaults to \$HOME. Override via searchPath/searchLocal in the config.\n"
 }
 
 # CONFIG FILE
