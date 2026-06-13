@@ -2,11 +2,9 @@
 
 **fzfX** multiplies the power of [fzf](https://github.com/junegunn/fzf) by providing zero-configuration battle-tested applications to common use cases of fzf. It delivers the power of finding, previewing, editing and managing any file in few key strokes.
 
-It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It will make use of improved utils that are becoming standard at Linux desktop environments, like **rg**, **fd**, **bat**, **rga**, **grc** and many others. But it will sensibly fallback to their classic UNIX counterparts like **grep**, **cat** and **ls** when they are not available.
+It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It builds on modern CLI tools: **fzf**, **fd** and **ripgrep** are required, while **bat**, **rga**, **grc**, **tree** and others are optional and gracefully fall back to classic counterparts like **cat** and **ls** when absent.
 
 ### Find files anywhere
-
-[![asciicast](https://asciinema.org/a/405579.svg)](https://asciinema.org/a/405579)
 
 ```sh
 fzfx
@@ -22,8 +20,6 @@ fzfx <searchPath>
 
 ### Find anything
 
-[![asciicast](https://asciinema.org/a/405581.svg)](https://asciinema.org/a/405581)
-
 ```sh
 fzfx hidden
 ```
@@ -32,8 +28,6 @@ By default hidden files, cache/vendor directories like `node_modules` _(see /usr
 
 ### Dynamically find a string inside files
 
-[![asciicast](https://asciinema.org/a/405583.svg)](https://asciinema.org/a/405583)
-
 ```sh
 fzfx full
 ```
@@ -41,8 +35,6 @@ fzfx full
 _Note: Supports regular expressions._
 
 ### Change directory
-
-[![asciicast](https://asciinema.org/a/405594.svg)](https://asciinema.org/a/405594)
 
 ```sh
 fzfx cd
@@ -62,23 +54,17 @@ _Note: Aliases must be put or be sourced in `.profile` or RC files like `.bashrc
 
 ### Copy any file to current dir
 
-[![asciicast](https://asciinema.org/a/406774.svg)](https://asciinema.org/a/406774)
-
 ```sh
 fzfx cp
 ```
 
 ### Move any file to any dir
 
-[![asciicast](https://asciinema.org/a/406775.svg)](https://asciinema.org/a/406775)
-
 ```sh
 fzfx mv
 ```
 
 ### Manage processes
-
-[![asciicast](https://asciinema.org/a/405584.svg)](https://asciinema.org/a/405584)
 
 ```sh
 fzfx ps
@@ -111,9 +97,10 @@ Edit `$XDG_CONFIG_HOME/fzfx/config`
 - Set `searchPath` to override the global search path.
 - Set `searchLocal=true` to always search locally.
 - Set `editor` to override the editor used by fzfx.
+- Set `clipboard` to override the clipboard command _(auto-detected: `wl-copy`, `xclip` or `pbcopy`)_.
 - Set `ignoreFile` to override the default ignore file _(.gitignore style)_.
 - Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
 
 _Note: All configurations are optional._
 
-_Note: $root is still supported but support will be dropped in next release. So update your config file._
+_Note: $root is still supported but support will be dropped in a future release. So update your config file._
