@@ -1,0 +1,26 @@
+# fzfx configuration — copy to $XDG_CONFIG_HOME/fzfx/config and edit.
+# Sourced as bash. Every setting is optional; uncomment what you need.
+
+# Override the global search path (defaults to $HOME).
+# searchPath="$HOME/Documents"
+
+# Always search the current directory instead of searchPath.
+# searchLocal=true
+
+# Editor for the f2 "edit" binding (defaults to $EDITOR, else a detected one).
+# editor=nvim
+
+# Clipboard command for the f3 "clip" binding.
+# Auto-detected when unset: wl-copy (Wayland), xclip (X11), pbcopy (macOS).
+# clipboard=wl-copy
+
+# Ignore file in .gitignore syntax (defaults to the bundled one).
+# ignoreFile="$HOME/.config/fzfx/ignore"
+
+# Viewers for the media modes (auto-detected when unset).
+# pdfView="evince --preview"
+# avView="mpv --no-terminal --length=5"
+# picView="feh --scale-down --auto-zoom"
+
+# Disable ripgrep-all in 'full' mode even if it is installed.
+# FZFX_DISABLE_RGA="True"

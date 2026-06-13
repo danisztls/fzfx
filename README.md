@@ -88,11 +88,26 @@ fzfx av
 
 ## Setup
 
+### Arch Linux
+
 Install through the [AUR](https://aur.archlinux.org/packages/fzfx-git).
+
+### From source
+
+```sh
+sudo make install             # installs under /usr/local
+sudo make PREFIX=/usr install # mirror the system package layout
+```
+
+Remove it with `sudo make uninstall` (pass the same `PREFIX`).
 
 ## Configure
 
-Edit `$XDG_CONFIG_HOME/fzfx/config`
+Copy the bundled example and edit it:
+
+```sh
+cp /usr/share/fzfx/config.example "${XDG_CONFIG_HOME:-$HOME/.config}/fzfx/config"
+```
 
 - Set `searchPath` to override the global search path.
 - Set `searchLocal=true` to always search locally.
@@ -102,3 +117,11 @@ Edit `$XDG_CONFIG_HOME/fzfx/config`
 - Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
 
 _Note: All configurations are optional._
+
+## Contributing
+
+Enable the bundled git hooks (runs [shellcheck](https://www.shellcheck.net/) on commit):
+
+```sh
+make install-hooks
+```

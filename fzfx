@@ -68,9 +68,12 @@ configFile="$configDir/config"
 # shellcheck source=/dev/null
 [ -f "$configFile" ] && source "$configFile"
 
-# Load ignore file
+# Load ignore file. dataDir is replaced at install time (see Makefile); in a
+# checkout the placeholder falls back to the conventional system path.
+dataDir="@DATADIR@"
+case "$dataDir" in @*) dataDir="/usr/share/fzfx" ;; esac
 ignoreFile="$configDir/ignore"
-[ -f "$ignoreFile" ] || ignoreFile="/usr/share/fzfx/ignore"
+[ -f "$ignoreFile" ] || ignoreFile="$dataDir/ignore"
 
 # Base fd command shared by the file/dir search modes; modes append --type and globs.
 # (hidden mode is intentionally excluded, it uses --no-ignore --hidden instead)
