@@ -27,7 +27,8 @@ ignoreFile="$configDir/ignore"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
 if ! [ "$editor" ]; then
-    editors=(vi vim nvim nano)
+    # fallback chain, easiest to use first (not a preference; only used when $EDITOR is unset)
+    editors=(nano micro vim nvim vi)
     # shellcheck disable=SC2153
     if [ "$EDITOR" ]; then
         editor="$EDITOR"
@@ -36,7 +37,7 @@ if ! [ "$editor" ]; then
             if [ "$(command -v "$prog")" ]; then
                 # remove alias and path prefix
                 editor=$(command -v "$prog" | sed 's/alias .*=//;s#.*/##')
-                break # first match wins, honor preference order
+                break # first available wins, i.e. the friendliest editor
             fi
         done
     fi
