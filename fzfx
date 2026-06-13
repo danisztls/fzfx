@@ -7,6 +7,9 @@
 # any failing stage. Config/env vars that may be unset are guarded with ${var:-}.
 set -euo pipefail
 
+# True if a command is available on PATH.
+_has() { command -v "$1" >/dev/null 2>&1; }
+
 # HELP
 printHelp() {
     printf "fzfx — fzf-powered fuzzy finder for common file and process tasks
@@ -64,7 +67,7 @@ if ! [ "${editor:-}" ]; then
         editor="$EDITOR"
     else
         for prog in "${editors[@]}"; do
-            if [ "$(command -v "$prog")" ]; then
+            if _has "$prog"; then
                 # remove alias and path prefix
                 editor=$(command -v "$prog" | sed 's/alias .*=//;s#.*/##')
                 break # first available wins, i.e. the friendliest editor
@@ -76,11 +79,11 @@ fi
 # Set clipboard: use $clipboard from config, otherwise detect by environment
 # (wl-copy on Wayland, xclip on X11, pbcopy on macOS).
 if ! [ "${clipboard:-}" ]; then
-    if [ "$(command -v wl-copy)" ]; then
+    if _has wl-copy; then
         clipboard=wl-copy
-    elif [ "$(command -v xclip)" ]; then
+    elif _has xclip; then
         clipboard=xclip
-    elif [ "$(command -v pbcopy)" ]; then
+    elif _has pbcopy; then
         clipboard=pbcopy
     else
         clipboard=xclip
@@ -91,7 +94,7 @@ fi
 # Required tools. Optional ones (bat, rga, grc, tree, evince, mpv, feh...) degrade gracefully.
 missing=()
 for dep in fzf fd rg; do
-    command -v "$dep" >/dev/null 2>&1 || missing+=("$dep")
+    _has "$dep" || missing+=("$dep")
 done
 if [ "${#missing[@]}" -gt 0 ]; then
     printf 'fzfx: missing required dependencies: %s\n' "${missing[*]}" >&2
@@ -128,7 +131,7 @@ f3:become($clipboard <<< {}),\
 f4:become(printf '%s\\n' '$searchPath'/{})"
 defaultHeader="enter → default, f1 → open, f2 → edit, f3 → clip, f4 → print, alt+shift+d → delete, esc → exit"
 
-if [ "$(command -v bat)" ]; then
+if _has bat; then
     defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
 else
     defaultPreview="cat {}"
@@ -164,58 +167,47 @@ fzfMd() {
     _fzf
 }
 
-fzfPdf() {
-# PDF: find preview pdf and postscript files
-    local query="$fdBase --type file '^.*\.(pdf|ps|eps)$'"
-    local bind
-    if [ -z "${pdfView:-}" ]; then
-        if [ "$(command -v evince)" ]; then
-            pdfView="evince --preview"
-        else
-            pdfView="xdg-open"
-        fi
-    fi
-    local bind="enter:execute-silent($pdfView {} 2>/dev/null)"
+# Parametric media finder shared by the pdf/av/pic modes: fd-match files by the
+# given extension regex and open the selection with the given viewer command.
+fzfMedia() {
+    local query="$fdBase --type file '$1'"
+    local bind="enter:execute-silent($2 {} 2>/dev/null)"
     local opts=(--preview-window hidden)
     _fzf
 }
 
-fzfAv() {
-# AV: find video and audio files
-    local query="$fdBase --type file '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
-    local bind
-    if [ -z "${avView:-}" ]; then
-        if [ "$(command -v mpv)" ]; then
-            avView="mpv --no-terminal --length=5" # autclose after 5s
-        else
-            avView="xdg-open"
-        fi
+fzfPdf() {
+# PDF: find and preview pdf and postscript files
+    local view="${pdfView:-}"
+    if [ -z "$view" ]; then
+        if _has evince; then view="evince --preview"; else view="xdg-open"; fi
     fi
-    local bind="enter:execute-silent($avView {} 2>/dev/null)"
-    local opts=(--preview-window hidden)
-    _fzf
-} 
+    fzfMedia '^.*\.(pdf|ps|eps)$' "$view"
+}
+
+fzfAv() {
+# AV: find and play audio and video files
+    local view="${avView:-}"
+    if [ -z "$view" ]; then
+        if _has mpv; then view="mpv --no-terminal --length=5"; else view="xdg-open"; fi
+    fi
+    fzfMedia '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$' "$view"
+}
 
 fzfPic() {
-# PIC: find pictures, video and audio files
-    local query="$fdBase --type file '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
-    if [ -z "${picView:-}" ]; then
-        if [ "$(command -v feh)"  ]; then
-            picView="feh --scale-down --auto-zoom"
-        else
-            picView="xdg-open"
-        fi
+# PIC: find and view pictures
+    local view="${picView:-}"
+    if [ -z "$view" ]; then
+        if _has feh; then view="feh --scale-down --auto-zoom"; else view="xdg-open"; fi
     fi
-    local bind="enter:execute-silent($picView {} 2>/dev/null)"
-    local opts=(--preview-window hidden)
-    _fzf
-} 
+    fzfMedia '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$' "$view"
+}
 
 fzfFull() {
 # FULL: search inside files
     local query="echo Type to search..."
-    local preview
-    if [[ $(command -v rga) ]] && ! [ "${FZFX_DISABLE_RGA:-}" = "True" ]; then
+    local preview queryFull
+    if _has rga && ! [ "${FZFX_DISABLE_RGA:-}" = "True" ]; then
         # use ripgrep-all
         queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile"
         preview="rga --ignore-case --no-ignore-vcs --pretty --context 10 {q} {}"
@@ -233,7 +225,7 @@ fzfCd() {
 # FCD: search dirs and cd to them
     local query="$fdBase --type directory"
     local preview
-    if [ "$(command -v tree)" ]; then
+    if _has tree; then
         preview="tree -C -c {} | head -200"
     else
         preview="ls --color=always {} | head -200"
@@ -246,7 +238,7 @@ fzfPs() {
 # f1 term, f2 kill, f3 sleep, f4 wake
     local query="ps -Ao pid,cmd,%mem,%cpu,tt,user,time,stat"
     # if grc is installed append it to command prefix
-    [ "$(command -v grc)" ] && query="grc --colour=on $query"
+    _has grc && query="grc --colour=on $query"
     local opts=(--ansi --header-lines=1 --reverse --cycle --preview-window hidden)
     local bind="\
 start:unbind(enter)+unbind(alt-D),\
@@ -280,7 +272,9 @@ case "${1:-}" in
     cd) fzfCd;;
     cp)
         sel="$(fzfDefault)"
-        [ -n "$sel" ] && cp -n "$sel" "$pwd/"
+        if [ -n "$sel" ]; then
+            cp -n "$sel" "$pwd/"
+        fi
         ;;
     mv)
         sel="$(fzfDefault)"
