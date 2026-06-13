@@ -61,6 +61,17 @@ if ! [ "$clipboard" ]; then
     fi
 fi
 
+# DEPENDENCY PREFLIGHT
+# Required tools. Optional ones (bat, rga, grc, tree, evince, mpv, feh...) degrade gracefully.
+missing=()
+for dep in fzf fd rg; do
+    command -v "$dep" >/dev/null 2>&1 || missing+=("$dep")
+done
+if [ "${#missing[@]}" -gt 0 ]; then
+    printf 'fzfx: missing required dependencies: %s\n' "${missing[*]}" >&2
+    exit 1
+fi
+
 # SEARCH PATH
 # Backward compatibility with $root
 # shellcheck disable=SC2154
