@@ -222,7 +222,7 @@ f1:reload(kill -15 {1} && sleep 0.15 && $query),\
 f2:reload(kill -9 {1} && sleep 0.15 && $query),\
 f3:reload(kill -19 {1} && sleep 0.15 && $query),\
 f4:reload(kill -18 {1} && sleep 0.15 && $query)"
-    local header="f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONTv"
+    local header="f1 → SIGTERM, f2 → SIGKILL, f3 → SIGSTOP, f4 → SIGCONT"
     _fzf
 }
 
