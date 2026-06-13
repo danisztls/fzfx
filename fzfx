@@ -2,6 +2,11 @@
 # fzf specialized functional fuzzy searches
 # dependencies: fzf, ripgrep, fd, trash-cli 
 # optionals: ripgrep-all, grc
+
+# Strict mode: exit on error, treat unset variables as errors, fail pipelines on
+# any failing stage. Config/env vars that may be unset are guarded with ${var:-}.
+set -euo pipefail
+
 # HELP
 printHelp() {
     printf "USAGE:
@@ -30,11 +35,11 @@ ignoreFile="$configDir/ignore"
 fdBase="fd --follow --ignore-case --no-ignore-vcs --ignore-file $ignoreFile"
 
 # Set editor: use $editor from config, otherwise, use $EDITOR, if defined, or whatever is available.
-if ! [ "$editor" ]; then
+if ! [ "${editor:-}" ]; then
     # fallback chain, easiest to use first (not a preference; only used when $EDITOR is unset)
     editors=(nano micro vim nvim vi)
     # shellcheck disable=SC2153
-    if [ "$EDITOR" ]; then
+    if [ "${EDITOR:-}" ]; then
         editor="$EDITOR"
     else
         for prog in "${editors[@]}"; do
@@ -49,7 +54,7 @@ fi
 
 # Set clipboard: use $clipboard from config, otherwise detect by environment
 # (wl-copy on Wayland, xclip on X11, pbcopy on macOS).
-if ! [ "$clipboard" ]; then
+if ! [ "${clipboard:-}" ]; then
     if [ "$(command -v wl-copy)" ]; then
         clipboard=wl-copy
     elif [ "$(command -v xclip)" ]; then
@@ -75,7 +80,7 @@ fi
 # SEARCH PATH
 # Backward compatibility with $root
 # shellcheck disable=SC2154
-if [ "$root" ]; then
+if [ "${root:-}" ]; then
     searchPath="$root"
 fi
 
@@ -91,7 +96,7 @@ elif [ $# -gt 2 ]; then
 fi
 
 # Check if a valid path is inputted and otherwise set $HOME
-if ! [ -d "$searchPath" ]; then
+if ! [ -d "${searchPath:-}" ]; then
     searchPath="$HOME"
 fi
 
@@ -101,7 +106,7 @@ fi
 defaultBind="\
 enter:become(printf '%s\\n' '$searchPath'/{}),\
 f1:become(xdg-open {} 2>/dev/null),\
-f2:become($editor {}),\
+f2:become(${editor:-} {}),\
 f3:become($clipboard <<< {}),\
 f4:become(printf '%s\\n' '$searchPath'/{})"
 defaultHeader="enter → default, f1 → open, f2 → edit, f3 → clip, f4 → print, alt+shift+d → delete, esc → exit"
@@ -115,13 +120,12 @@ fi
 defaultOpts="--preview-window=right:50%:wrap"
 
 # Export Defaults
-export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
+export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
 
 # LIB
 _fzf() {
     export FZF_DEFAULT_COMMAND="$query"
-    # shellcheck disable=SC2068
-    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]} \
+    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]+"${opts[@]}"} \
     --bind "alt-D:reload(trash {} && $query)" # can't be on $defaultBind as $query need to be declared
 }
 
@@ -147,7 +151,7 @@ fzfPdf() {
 # PDF: find preview pdf and postscript files
     local query="$fdBase --type file '^.*\.(pdf|ps|eps)$'"
     local bind
-    if [ -z "$pdfView" ]; then
+    if [ -z "${pdfView:-}" ]; then
         if [ "$(command -v evince)" ]; then
             pdfView="evince --preview"
         else
@@ -163,7 +167,7 @@ fzfAv() {
 # AV: find video and audio files
     local query="$fdBase --type file '^.*\.(mkv|mp4|mtk|webm|avi|mp3|ogg|wav|wma|aac)$'"
     local bind
-    if [ -z "$avView" ]; then
+    if [ -z "${avView:-}" ]; then
         if [ "$(command -v mpv)" ]; then
             avView="mpv --no-terminal --length=5" # autclose after 5s
         else
@@ -178,7 +182,7 @@ fzfAv() {
 fzfPic() {
 # PIC: find pictures, video and audio files
     local query="$fdBase --type file '^.*\.(mkv|mp4|webm|avi|webp|jpg|jpeg|png|gif)$'"
-    if [ -z "$picView" ]; then
+    if [ -z "${picView:-}" ]; then
         if [ "$(command -v feh)"  ]; then
             picView="feh --scale-down --auto-zoom"
         else
@@ -196,13 +200,13 @@ fzfFull() {
 # $1 is returned by fzf
     local query="echo Type to search..."
     local preview
-    if [[ $(command -v rga) ]] && ! [ "$FZFX_DISABLE_RGA" = "True" ]; then
+    if [[ $(command -v rga) ]] && ! [ "${FZFX_DISABLE_RGA:-}" = "True" ]; then
         # use ripgrep-all
-        queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile $1"
+        queryFull="rga --ignore-case --no-ignore-vcs --files-with-matches --rga-adapters='-decompress,tar,zip,ffmpeg,sqlite' --ignore-file $ignoreFile ${1:-}"
         preview="rga --ignore-case --no-ignore-vcs --pretty --context 10 {q} {}"
     else
         # use ripgrep
-        queryFull="rg --ignore-case --no-ignore-vcs --files-with-matches --no-messages --ignore-file $ignoreFile $1"
+        queryFull="rg --ignore-case --no-ignore-vcs --files-with-matches --no-messages --ignore-file $ignoreFile ${1:-}"
         preview="rg --ignore-case --no-ignore-vcs --pretty --no-line-number --context 10 {q} {}"
     fi
     local bind="change:reload($queryFull {q} || true)+preview($preview)"
@@ -248,12 +252,12 @@ pwd="$PWD"
 # Change directory to searchPath
 # if searchLocal is on it will not cd
 # shellcheck disable=SC2154 # it's external
-if ! [ "$searchLocal" ]; then
+if ! [ "${searchLocal:-}" ]; then
     # shellcheck disable=SC2164 # unneeded
     cd "$searchPath"
 fi
 
-case "$1" in
+case "${1:-}" in
     help|-h|--help) printHelp;;
     hidden) fzfHidden;;
     md) fzfMd;;
