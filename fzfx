@@ -31,6 +31,15 @@ MODES:
 PATH defaults to \$HOME. Override via searchPath/searchLocal in the config.\n"
 }
 
+# Expand a leading ~ or ~/ to $HOME. The shell only does this for unquoted
+# tildes, so a quoted path argument like '~/dir' would otherwise stay literal.
+expandTilde() {
+    case "$1" in
+        \~|\~/*) printf '%s' "$HOME${1#\~}" ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
 # CONFIG FILE
 # Load config file
 configDir="${XDG_CONFIG_HOME:-"$HOME/.config"}/fzfx"
@@ -90,15 +99,17 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 # SEARCH PATH
-# Parse arguments
-# TODO: Make it work with ~
-# when only argument is inputted is it mode or searchPath?
-if [ $# -eq 1 ] && [ -d "$1" ]; then
-    searchPath="$1"
+# Parse arguments. A lone argument is taken as a search path when it names an
+# existing directory, otherwise it is treated as a mode (see the case below);
+# a two-argument call is always "<mode> <path>". Tildes are expanded so quoted
+# paths work too.
+if [ $# -eq 1 ]; then
+    arg="$(expandTilde "$1")"
+    [ -d "$arg" ] && searchPath="$arg"
 elif [ $# -eq 2 ]; then
-    searchPath="$2"
+    searchPath="$(expandTilde "$2")"
 elif [ $# -gt 2 ]; then
-    echo "Error, exceding number of arguments!" && exit 1
+    echo "Error, exceeding number of arguments!" && exit 1
 fi
 
 # Check if a valid path is inputted and otherwise set $HOME
