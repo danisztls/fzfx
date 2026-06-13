@@ -247,8 +247,17 @@ case "$1" in
     pic) fzfPic;;
     full) fzfFull;;
     cd) fzfCd;;
-    cp) cp -n "$(fzfDefault)" "$pwd/";;
-    mv) mv -n "$(fzfDefault)" "$(fzfCd)";;
+    cp)
+        sel="$(fzfDefault)"
+        [ -n "$sel" ] && cp -n "$sel" "$pwd/"
+        ;;
+    mv)
+        sel="$(fzfDefault)"
+        if [ -n "$sel" ]; then
+            dst="$(fzfCd)"
+            [ -n "$dst" ] && mv -n "$sel" "$dst"
+        fi
+        ;;
     ps) fzfPs;;
     *) fzfDefault;;
 esac
