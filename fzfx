@@ -36,6 +36,7 @@ if ! [ "$editor" ]; then
             if [ "$(command -v "$prog")" ]; then
                 # remove alias and path prefix
                 editor=$(command -v "$prog" | sed 's/alias .*=//;s#.*/##')
+                break # first match wins, honor preference order
             fi
         done
     fi
