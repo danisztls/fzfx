@@ -43,9 +43,18 @@ if ! [ "$editor" ]; then
     fi
 fi
 
-# Set clipboard: use $clipboard from config, otherwise, use `xclip`
+# Set clipboard: use $clipboard from config, otherwise detect by environment
+# (wl-copy on Wayland, xclip on X11, pbcopy on macOS).
 if ! [ "$clipboard" ]; then
-    clipboard=xclip
+    if [ "$(command -v wl-copy)" ]; then
+        clipboard=wl-copy
+    elif [ "$(command -v xclip)" ]; then
+        clipboard=xclip
+    elif [ "$(command -v pbcopy)" ]; then
+        clipboard=pbcopy
+    else
+        clipboard=xclip
+    fi
 fi
 
 # SEARCH PATH
