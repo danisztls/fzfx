@@ -157,16 +157,20 @@ else
     defaultPreview="cat {}"
 fi
 
-defaultOpts="--preview-window=right:50%:wrap"
-
-# Export Defaults
-export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:-} --bind '$defaultBind' --header '$defaultHeader' --preview '$defaultPreview' $defaultOpts"
+defaultOpts=(--preview-window=right:50%:wrap)
 
 # LIB
+# Pass the defaults as real fzf arguments rather than through FZF_DEFAULT_OPTS:
+# fzf re-parses that env var with its own shell-word splitter, which would
+# collapse the single quotes inside the become() binds and corrupt the printed
+# path (the 'enter'/'f4' binds above). The user's own FZF_DEFAULT_OPTS (colors,
+# etc.) is still honored by fzf automatically. Mode-specific --bind/--preview/
+# --header are passed after the defaults so they override them.
 _fzf() {
     export FZF_DEFAULT_COMMAND="$query"
-    fzf ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]+"${opts[@]}"} \
-    --bind "alt-D:reload(trash {} && $query)" # can't be on $defaultBind as $query need to be declared
+    fzf --bind "$defaultBind" --header "$defaultHeader" --preview "$defaultPreview" "${defaultOpts[@]}" \
+        ${bind:+--bind "$bind"} ${preview:+--preview "$preview"} ${header:+--header "$header"} ${opts[@]+"${opts[@]}"} \
+        --bind "alt-D:reload(trash {} && $query)" # needs $query, so it can't live in $defaultBind
 }
 
 fzfDefault() {
