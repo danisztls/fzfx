@@ -13,9 +13,6 @@ _has() { command -v "$1" >/dev/null 2>&1; }
 # Version string. Replaced at install time (see Makefile); from a checkout the
 # placeholder is resolved via git, otherwise it reads "unknown".
 version="@VERSION@"
-# This script's directory, captured before the later cd so the version fallback
-# can still locate the git checkout.
-selfDir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)" || selfDir=""
 
 # HELP
 printHelp() {
@@ -46,7 +43,14 @@ PATH defaults to \$HOME. Override via searchPath/searchLocal in the config.\n"
 printVersion() {
     local v="$version"
     case "$v" in
-        @*) v="$(git -C "${selfDir:-.}" describe --tags 2>/dev/null || echo unknown)" ;;
+        @*)
+            # In a checkout, resolve the version from git. selfDir is this
+            # script's directory (this runs before the MAIN cd, so a relative
+            # invocation still resolves correctly).
+            local selfDir
+            selfDir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)" || selfDir="."
+            v="$(git -C "$selfDir" describe --tags 2>/dev/null || echo unknown)"
+            ;;
     esac
     printf 'fzfx %s\n' "$v"
 }
@@ -276,8 +280,15 @@ f4:reload(kill -18 {1} && sleep 0.15 && $query)"
 }
 
 # MAIN
+# Help/version need neither fzf nor the search path; dispatch them before the
+# cd below, which would otherwise rebase the relative path printVersion needs.
+case "${1:-}" in
+    help|-h|--help) printHelp; exit 0;;
+    version|-V|--version) printVersion; exit 0;;
+esac
+
 # Store local path for later use
-pwd="$PWD" 
+pwd="$PWD"
 
 # Change directory to searchPath
 # if searchLocal is on it will not cd
@@ -286,8 +297,6 @@ if ! [ "${searchLocal:-}" ]; then
 fi
 
 case "${1:-}" in
-    help|-h|--help) printHelp;;
-    version|-V|--version) printVersion;;
     hidden) fzfHidden;;
     md) fzfMd;;
     pdf) fzfPdf;;
