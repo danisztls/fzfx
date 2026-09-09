@@ -23,7 +23,7 @@ USAGE:
 
 MODES:
     \e[1m(none)\e[0m  find files (the default);
-    \e[1mhidden\e[0m  find files, including hidden (.git and .cache excluded);
+    \e[1mhidden\e[0m  find anything, including hidden and ignored files;
     \e[1mmd\e[0m      find markdown files;
     \e[1mpdf\e[0m     find and preview pdf and postscript files;
     \e[1mav\e[0m      find and play audio and video files;
@@ -155,10 +155,13 @@ f3:become($clipboard <<< {}),\
 f4:become(printf '%s\\n' '$searchPath'/{})"
 defaultHeader="enter → default, f1 → open, f2 → edit, f3 → clip, f4 → print, alt+shift+d → delete, esc → exit"
 
-if _has bat; then
-    defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
-else
-    defaultPreview="cat {}"
+# Honor a config-provided defaultPreview; otherwise prefer bat over cat.
+if ! [ "${defaultPreview:-}" ]; then
+    if _has bat; then
+        defaultPreview="bat --style=numbers --color=always --line-range :500 {}"
+    else
+        defaultPreview="cat {}"
+    fi
 fi
 
 defaultOpts=(--preview-window=right:50%:wrap)
