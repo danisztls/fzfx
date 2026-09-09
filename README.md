@@ -1,8 +1,34 @@
 # fzfX
 
-**fzfX** multiplies the power of [fzf](https://github.com/junegunn/fzf) by providing zero-configuration battle-tested applications to common use cases of fzf. It delivers the power of finding, previewing, editing and managing any file in few key strokes.
+**fzfX** multiplies the power of [fzf](https://github.com/junegunn/fzf) by wrapping it into zero-configuration, battle-tested answers to its most common use cases. Finding, previewing, editing and managing any file, in a few keystrokes.
 
-It is agnostic and does not require a specific terminal emulator, desktop environment or text editor. It builds on modern CLI tools: **fzf**, **fd** and **ripgrep** are required, while **bat**, **rga**, **grc**, **tree** and others are optional and gracefully fall back to classic counterparts like **cat** and **ls** when absent.
+It is agnostic: no specific terminal emulator, desktop environment or text editor required. It builds on modern CLI tools — **fzf**, **fd** and **ripgrep** are required, while **bat**, **rga**, **grc**, **tree** and others are optional and fall back gracefully to classic counterparts like **cat** and **ls** when absent.
+
+```sh
+fzfx [MODE] [PATH]
+```
+
+`PATH` defaults to `$HOME` and can be overridden or disabled entirely (see [Configure](#configure)). Any mode also accepts an explicit path:
+
+```sh
+fzfx md ~/Docs
+```
+
+## Keybindings
+
+The same bindings work across every file mode:
+
+| Key           | Action                              |
+| ------------- | ----------------------------------- |
+| `enter`       | default action (mode-specific)      |
+| `f1`          | open with `xdg-open`                |
+| `f2`          | open in `$EDITOR`                   |
+| `f3`          | copy path to the clipboard          |
+| `f4`          | print path to stdout                |
+| `alt+shift+d` | move to trash (needs **trash-cli**) |
+| `esc`         | exit                                |
+
+## Modes
 
 ### Find files anywhere
 
@@ -10,13 +36,7 @@ It is agnostic and does not require a specific terminal emulator, desktop enviro
 fzfx
 ```
 
-By default it will use `$HOME` as the search path but that can be overrided or disabled entirely.
-
-Optionally the search path can be inputted in the command. Which will also work for other modes.
-
-```sh
-fzfx <searchPath>
-```
+Hidden files and cache/vendor directories like `node_modules` are filtered out by a bundled ignore list, in `.gitignore` syntax, at `$PREFIX/share/fzfx/ignore`. Repository `.gitignore` files are deliberately _not_ honored, so files your VCS ignores are still findable.
 
 ### Find anything
 
@@ -24,7 +44,7 @@ fzfx <searchPath>
 fzfx hidden
 ```
 
-By default hidden files, cache/vendor directories like `node_modules` _(see /usr/share/fzfx/ignore)_ are ignored and `.gitignore` files inside directories are followed.
+Same as above but nothing is filtered out, hidden files included.
 
 ### Dynamically find a string inside files
 
@@ -32,7 +52,7 @@ By default hidden files, cache/vendor directories like `node_modules` _(see /usr
 fzfx full
 ```
 
-_Note: Supports regular expressions._
+Full-text search that re-runs as you type, with matches highlighted in the preview. Supports regular expressions. Uses [ripgrep-all](https://github.com/phiresky/ripgrep-all) when available to reach inside archives, PDFs, SQLite databases and media metadata; plain ripgrep otherwise.
 
 ### Change directory
 
@@ -40,19 +60,15 @@ _Note: Supports regular expressions._
 fzfx cd
 ```
 
-To change dir with ENTER create an alias:
+Prints the selected directory. A child shell can't act on its parent, so changing directory with `enter` needs an alias:
 
 ```sh
 alias fcd='cd "$(fzfx cd)"'
 ```
 
-_Note: Needed because a child shell can't act on its parent._
+_Note: aliases must live in — or be sourced from — `.profile` or an RC file like `.bashrc` to persist. See [these dotfiles](https://github.com/danisztls/dotfiles/blob/main/shell/aliases) for an example._
 
-If you don't know how aliases work, try using [this](https://github.com/danisztls/dotfiles/blob/main/shell/aliases) configuration as an example.
-
-_Note: Aliases must be put or be sourced in `.profile` or RC files like `.bashrc` so to work persistently._
-
-### Copy any file to current dir
+### Copy any file to the current dir
 
 ```sh
 fzfx cp
@@ -64,27 +80,46 @@ fzfx cp
 fzfx mv
 ```
 
+Pick the file, then pick the destination directory.
+
 ### Manage processes
 
 ```sh
 fzfx ps
 ```
 
+A live process list, refreshed on every keystroke and colorized with **grc** when available:
+
+| Key  | Signal    |
+| ---- | --------- |
+| `f1` | `SIGTERM` |
+| `f2` | `SIGKILL` |
+| `f3` | `SIGSTOP` |
+| `f4` | `SIGCONT` |
+
 ### Find files with special cases
 
 ```sh
-# markdown notes
-fzfx md
-
-# pdf, ps and eps
-fzfx pdf
-
-# pictures
-fzfx pic
-
-# audio and videos
-fzfx av
+fzfx md   # markdown notes
+fzfx pdf  # pdf, ps and eps
+fzfx pic  # pictures
+fzfx av   # audio and video
 ```
+
+The media modes open the selection in a dedicated viewer instead of the default action — **evince**, **feh** and **mpv** when installed, `xdg-open` otherwise. All of them are configurable.
+
+### Meta
+
+```sh
+fzfx version  # also -V, --version
+fzfx help     # also -h, --help
+```
+
+## Dependencies
+
+**Required:** [fzf](https://github.com/junegunn/fzf), [fd](https://github.com/sharkdp/fd), [ripgrep](https://github.com/BurntSushi/ripgrep).
+
+**Optional:** [bat](https://github.com/sharkdp/bat) _(better text preview)_, [ripgrep-all](https://github.com/phiresky/ripgrep-all) _(full-text search inside blobs)_, [grc](https://github.com/garabik/grc) _(colorized process list)_, `tree` _(better directory preview)_, `trash-cli` _(the delete binding)_, `evince`/`mpv`/`feh` _(media viewers)_, `wl-copy`/`xclip`/`pbcopy` _(clipboard)_.
 
 ## Setup
 
@@ -103,25 +138,33 @@ Remove it with `sudo make uninstall` (pass the same `PREFIX`).
 
 ## Configure
 
-Copy the bundled example and edit it:
+All configuration is optional. Copy the bundled example and edit it:
 
 ```sh
-cp /usr/share/fzfx/config.example "${XDG_CONFIG_HOME:-$HOME/.config}/fzfx/config"
+cp "$PREFIX/share/fzfx/config.example" "${XDG_CONFIG_HOME:-$HOME/.config}/fzfx/config"
 ```
 
-- Set `searchPath` to override the global search path.
-- Set `searchLocal=true` to always search locally.
-- Set `editor` to override the editor used by fzfx.
-- Set `clipboard` to override the clipboard command _(auto-detected: `wl-copy`, `xclip` or `pbcopy`)_.
-- Set `ignoreFile` to override the default ignore file _(.gitignore style)_.
-- Set `defaultPreview`, `pdfView`, `avView`, `picView` to whatever you prefer.
+| Setting                                          | Purpose                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| `searchPath`                                     | override the global search path _(defaults to `$HOME`)_            |
+| `searchLocal`                                    | set to `true` to always search the current directory               |
+| `editor`                                         | override the editor _(defaults to `$EDITOR`, else a detected one)_ |
+| `clipboard`                                      | override the clipboard command _(auto-detected)_                   |
+| `ignoreFile`                                     | override the ignore list, `.gitignore` syntax                      |
+| `defaultPreview`, `pdfView`, `avView`, `picView` | override the preview and viewer commands                           |
 
-_Note: All configurations are optional._
+Your own `FZF_DEFAULT_OPTS` — colors, layout — is honored on top of fzfX's own settings.
 
 ## Contributing
 
-Enable the bundled git hooks (runs [shellcheck](https://www.shellcheck.net/) on commit):
+Enable the bundled git hooks, which run [shellcheck](https://www.shellcheck.net/) on commit:
 
 ```sh
 make install-hooks
 ```
+
+Lint manually with `make lint`.
+
+## License
+
+[GPL-3.0-or-later](LICENSE) © Daniel Souza
